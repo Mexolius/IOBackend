@@ -7,7 +7,7 @@ plugins {
     kotlin("jvm") version "1.4.32"
 }
 
-group = "com.gumi_moodle"
+group = "com.gumi.moodle"
 version = "0.0.1"
 application {
     mainClass.set("io.ktor.server.netty.EngineMain")

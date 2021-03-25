@@ -1,4 +1,4 @@
-package com.gumi_moodle
+package com.gumi.moodle
 
 import io.ktor.routing.*
 import io.ktor.http.*
