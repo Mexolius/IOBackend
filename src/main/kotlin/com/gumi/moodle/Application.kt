@@ -26,6 +26,8 @@ fun Application.module(testing: Boolean = false) {
 
     routing {
         get("/") {
+            //example of connection with db
+            data class Jedi(val name: String, val age: Int)
             val client = KMongo.createClient("mongodb://localhost:27017").coroutine
             val users = client.getDatabase("test")
                 .getCollection<Jedi>()
@@ -35,5 +37,3 @@ fun Application.module(testing: Boolean = false) {
         }
     }
 }
-
-data class Jedi(val name: String, val age: Int)
