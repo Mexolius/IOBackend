@@ -1,0 +1,44 @@
+[
+  {
+    "name": "kolos1",
+    "points": 60,
+    "children": [
+      {
+        "name": "zad1",
+        "points": 60,
+        "children": [
+          {
+            "name": "p1",
+            "points": 60
+          },
+          {
+            "name": "p1",
+            "points": 40
+          }
+        ]
+      },
+      {
+        "name": "zad2",
+        "points": 40
+      }
+    ]
+  },
+  {
+    "name": "kolos2",
+    "points": 40,
+    "children": [
+      {
+        "name": "zad1",
+        "points": 60
+      },
+      {
+        "name": "zad2",
+        "points": 40
+      }
+    ]
+  },
+  {
+    "name": "zadanie",
+    "points": 20
+  }
+]

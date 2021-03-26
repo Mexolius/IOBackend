@@ -1,0 +1,18 @@
+{
+  "name": "course1",
+  "description": "an example course",
+  "studentLimit": 100,
+  "students": [
+    {
+      "id": "id1",
+      "grades": [
+      ]
+    }
+  ],
+  "lecturers": [
+    "id1",
+    "id2"
+  ],
+  "gradeModel": [
+  ]
+}
