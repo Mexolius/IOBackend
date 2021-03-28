@@ -1,0 +1,11 @@
+{
+  "firstName": "aa",
+  "lastName": "bb",
+  "email": "aa@aa.aa",
+  "password": "sth encrypted",
+  "roles": [
+    "admin",
+    "student",
+    "lecturer"
+  ]
+}
