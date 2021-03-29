@@ -18,6 +18,7 @@ class UserDAO {
         if (getUser(user.email) != null) {
             return false
         }
+        user.hashPassword(user.password)
         collection.insertOne(user)
         return true
     }
