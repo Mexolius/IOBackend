@@ -1,6 +1,6 @@
 package com.gumi.moodle.rest_controllers
 
-import com.gumi.moodle.DAO.UserDAO
+import com.gumi.moodle.dao.UserDAO
 import com.gumi.moodle.model.Role
 import com.gumi.moodle.model.User
 import io.ktor.application.*

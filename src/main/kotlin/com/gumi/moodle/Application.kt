@@ -1,6 +1,6 @@
 package com.gumi.moodle
 
-import com.gumi.moodle.DAO.UserDAO
+import com.gumi.moodle.dao.UserDAO
 import com.gumi.moodle.rest_controllers.userRoutes
 import io.ktor.application.*
 import io.ktor.auth.*
