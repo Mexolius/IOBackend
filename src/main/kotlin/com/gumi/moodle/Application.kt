@@ -35,6 +35,16 @@ fun Application.module(testing: Boolean = false) {
         }
     }
 
+    install(CORS){
+        method(HttpMethod.Get)
+        method(HttpMethod.Post)
+        header(HttpHeaders.AccessControlAllowHeaders)
+        header(HttpHeaders.ContentType)
+        header(HttpHeaders.AccessControlAllowOrigin)
+        allowCredentials = true
+        anyHost()
+    }
+
     routing {
         get("/health") {
             call.respond(HttpStatusCode.OK)
@@ -61,4 +71,3 @@ fun Application.module(testing: Boolean = false) {
 suspend fun validateUser(credentials: UserPasswordCredential): Boolean {
     val user = UserDAO().getUser(credentials.name) ?: return false
     return user.checkPassword(credentials.password)
-}
