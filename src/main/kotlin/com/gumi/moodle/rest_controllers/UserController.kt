@@ -1,6 +1,6 @@
 package com.gumi.moodle.rest_controllers
 
-import com.gumi.moodle.DAO.UserDAO
+import com.gumi.moodle.dao.UserDAO
 import com.gumi.moodle.model.Role
 import com.gumi.moodle.model.User
 import io.ktor.application.*
@@ -47,8 +47,9 @@ fun Application.userRoutes() {
             post {
                 val user = call.receive<User>()
                 user.roles = listOf(Role.STUDENT)
+                user.hashPassword(user.password)
                 val result = dao.addUser(user)
-                if (result == false) {
+                if (!result) {
                     return@post call.respondText("User already exists", status = HttpStatusCode.Conflict)
                 }
                 call.respond(HttpStatusCode.OK)

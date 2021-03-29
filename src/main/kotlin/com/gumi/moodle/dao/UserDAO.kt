@@ -1,4 +1,4 @@
-package com.gumi.moodle.DAO
+package com.gumi.moodle.dao
 
 import com.gumi.moodle.model.User
 import org.litote.kmongo.coroutine.coroutine
