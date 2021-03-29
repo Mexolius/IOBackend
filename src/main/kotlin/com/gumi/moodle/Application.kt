@@ -1,7 +1,9 @@
 package com.gumi.moodle
 
+import com.gumi.moodle.rest_controllers.userRoutes
 import io.ktor.application.*
 import io.ktor.features.*
+import io.ktor.http.*
 import io.ktor.jackson.*
 import io.ktor.response.*
 import io.ktor.routing.*
@@ -25,9 +27,12 @@ fun Application.module(testing: Boolean = false) {
     }
 
     routing {
+        get("/health") {
+            call.respond(HttpStatusCode.OK)
+        }
         get("/") {
-            //example of connection with db
             data class Jedi(val name: String, val age: Int)
+
             val client = KMongo.createClient("mongodb://localhost:27017").coroutine
             val users = client.getDatabase("test")
                 .getCollection<Jedi>()
@@ -35,5 +40,6 @@ fun Application.module(testing: Boolean = false) {
                 .toList()
             call.respondText("users: $users")
         }
+        userRoutes()
     }
 }
