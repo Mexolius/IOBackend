@@ -19,7 +19,7 @@ class User(
 ) {
     private val keyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1")
 
-    fun changePassword(newPassword: String) {
+    fun hashPassword(newPassword: String) {
         val random = SecureRandom()
         val hash: ByteArray
         val saltBytes = ByteArray(16)

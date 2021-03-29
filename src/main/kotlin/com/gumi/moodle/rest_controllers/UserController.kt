@@ -47,7 +47,7 @@ fun Application.userRoutes() {
             post {
                 val user = call.receive<User>()
                 user.roles = listOf(Role.STUDENT)
-                user.changePassword(user.password)
+                user.hashPassword(user.password)
                 val result = dao.addUser(user)
                 if (!result) {
                     return@post call.respondText("User already exists", status = HttpStatusCode.Conflict)
