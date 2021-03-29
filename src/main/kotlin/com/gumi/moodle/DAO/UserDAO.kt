@@ -14,8 +14,16 @@ class UserDAO {
         return collection.find().toList()
     }
 
-    suspend fun addUser(user: User) {
+    suspend fun addUser(user: User): Boolean {
+        if (getUser(user.email) != null) {
+            return false
+        }
         collection.insertOne(user)
+        return true
+    }
+
+    suspend fun getUser(email: String): User? {
+        return getUsers().find { it.email == email }
     }
 
 }

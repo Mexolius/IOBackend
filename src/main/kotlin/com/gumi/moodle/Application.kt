@@ -1,7 +1,9 @@
 package com.gumi.moodle
 
+import com.gumi.moodle.DAO.UserDAO
 import com.gumi.moodle.rest_controllers.userRoutes
 import io.ktor.application.*
+import io.ktor.auth.*
 import io.ktor.features.*
 import io.ktor.http.*
 import io.ktor.jackson.*
@@ -26,9 +28,21 @@ fun Application.module(testing: Boolean = false) {
         jackson()
     }
 
+    install(Authentication) {
+        basic(name = "basicAuth") {
+            realm = "Ktor Server"
+            validate { credentials -> if (validateUser(credentials)) UserIdPrincipal(credentials.name) else null }
+        }
+    }
+
     routing {
         get("/health") {
             call.respond(HttpStatusCode.OK)
+        }
+        authenticate("basicAuth") {
+            get("/logged") {
+                call.respond(HttpStatusCode.OK)
+            }
         }
         get("/") {
             data class Jedi(val name: String, val age: Int)
@@ -42,4 +56,9 @@ fun Application.module(testing: Boolean = false) {
         }
         userRoutes()
     }
+}
+
+suspend fun validateUser(credentials: UserPasswordCredential): Boolean {
+    val user = UserDAO().getUser(credentials.name) ?: return false
+    return user.password == credentials.password
 }

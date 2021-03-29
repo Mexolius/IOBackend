@@ -5,7 +5,8 @@ class User(
     var lastName: String,
     var email: String,
     var password: String,
-    var roles: List<Role>
+    var roles: List<Role> = listOf(Role.STUDENT),
+    var salt: String = ""
 ) {
 
     override fun toString(): String {
