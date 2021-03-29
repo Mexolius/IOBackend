@@ -60,5 +60,5 @@ fun Application.module(testing: Boolean = false) {
 
 suspend fun validateUser(credentials: UserPasswordCredential): Boolean {
     val user = UserDAO().getUser(credentials.name) ?: return false
-    return user.password == credentials.password
+    return user.checkPassword(credentials.password)
 }
