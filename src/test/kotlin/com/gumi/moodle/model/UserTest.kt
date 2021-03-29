@@ -2,11 +2,19 @@ package com.gumi.moodle.model
 
 import kotlin.test.Test
 import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 class UserTest {
     @Test
-    fun properPasswordTest(){
+    fun passwordHashTest(){
+        val password = "secret"
+        val user = User("Fname", "Lname", "email", password)
+        assertNotEquals(password, user.password)
+    }
+
+    @Test
+    fun rightPasswordTest(){
         val password = "secret"
         val user = User("Fname", "Lname", "email", password)
         assertTrue(user.checkPassword(password))
