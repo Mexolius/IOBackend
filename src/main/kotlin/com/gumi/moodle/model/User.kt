@@ -13,30 +13,26 @@ class User(
     var firstName: String,
     var lastName: String,
     var email: String,
-    password: String,
+    var password: String,
     var roles: List<Role> = listOf(Role.STUDENT),
     var salt: ByteArray = ByteArray(0)
 ) {
     private val keyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1")
-    var password: String = ""
-        set(value) {
-            val random = SecureRandom()
-            val hash: ByteArray
-            val saltBytes = ByteArray(16)
-            random.nextBytes(saltBytes)
-            val spec = PBEKeySpec(value.toCharArray(), saltBytes, 65536, 128)
-            hash = try {
-                keyFactory.generateSecret(spec).encoded
-            } catch (invalidKeySpecException: InvalidKeySpecException) {
-                invalidKeySpecException.printStackTrace()
-                return
-            }
-            this.salt = saltBytes
-            field = String(hash)
-        }
 
-    init {
-        this.password = password
+    fun changePassword(newPassword: String) {
+        val random = SecureRandom()
+        val hash: ByteArray
+        val saltBytes = ByteArray(16)
+        random.nextBytes(saltBytes)
+        val spec = PBEKeySpec(newPassword.toCharArray(), saltBytes, 65536, 128)
+        hash = try {
+            keyFactory.generateSecret(spec).encoded
+        } catch (invalidKeySpecException: InvalidKeySpecException) {
+            invalidKeySpecException.printStackTrace()
+            return
+        }
+        this.salt = saltBytes
+        this.password = String(hash)
     }
 
     fun checkPassword(input: String): Boolean {
