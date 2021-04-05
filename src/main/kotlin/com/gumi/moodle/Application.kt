@@ -1,6 +1,8 @@
 package com.gumi.moodle
 
-import com.gumi.moodle.dao.UserDAO
+import com.gumi.moodle.com.gumi.moodle.Generator
+import com.gumi.moodle.com.gumi.moodle.dao.UserDAO
+import com.gumi.moodle.com.gumi.moodle.rest_controllers.courseRoutes
 import com.gumi.moodle.rest_controllers.userRoutes
 import io.ktor.application.*
 import io.ktor.auth.*
@@ -35,7 +37,7 @@ fun Application.module(testing: Boolean = false) {
         }
     }
 
-    install(CORS){
+    install(CORS) {
         method(HttpMethod.Get)
         method(HttpMethod.Post)
         method(HttpMethod.Options)
@@ -67,11 +69,21 @@ fun Application.module(testing: Boolean = false) {
                 .toList()
             call.respondText("users: $users")
         }
+        post("/generate") {
+            try {
+                Generator().insertToDB()
+                call.respond(HttpStatusCode.OK)
+            } catch (e: Exception) {
+                log.error("failed generating new data", e)
+                call.respond(HttpStatusCode.InternalServerError)
+            }
+        }
         userRoutes()
+        courseRoutes()
     }
 }
 
 suspend fun validateUser(credentials: UserPasswordCredential): Boolean {
-    val user = UserDAO().getUser(credentials.name) ?: return false
+    val user = UserDAO().getOne(credentials.name) ?: return false
     return user.checkPassword(credentials.password)
 }

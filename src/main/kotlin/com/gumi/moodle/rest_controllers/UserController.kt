@@ -1,6 +1,6 @@
 package com.gumi.moodle.rest_controllers
 
-import com.gumi.moodle.dao.UserDAO
+import com.gumi.moodle.com.gumi.moodle.dao.UserDAO
 import com.gumi.moodle.model.Role
 import com.gumi.moodle.model.User
 import io.ktor.application.*
@@ -20,7 +20,7 @@ fun Application.userRoutes() {
         authenticate("basicAuth") {
             route("/users") {
                 get {
-                    val users = dao.getUsers()
+                    val users = dao.getAll()
 
                     call.respond(users)
                 }
@@ -28,7 +28,7 @@ fun Application.userRoutes() {
             route("/user") {
                 post {
                     val user = call.receive<User>()
-                    dao.addUser(user)
+                    dao.add(User.createUserWithPlaintextInput(user))
                     call.respond(HttpStatusCode.OK)
                 }
             }
@@ -38,7 +38,7 @@ fun Application.userRoutes() {
                         "Missing or malformed email",
                         status = HttpStatusCode.BadRequest
                     )
-                    val user = dao.getUser(email) ?: return@get call.respond(HttpStatusCode.NotFound)
+                    val user = dao.getOne(email) ?: return@get call.respond(HttpStatusCode.NotFound)
                     call.respond(user)
                 }
             }
@@ -47,7 +47,7 @@ fun Application.userRoutes() {
             post {
                 val user = call.receive<User>()
                 user.roles = listOf(Role.STUDENT)
-                val result = dao.addUser(user)
+                val result = dao.add(User.createUserWithPlaintextInput(user))
                 if (!result) {
                     return@post call.respondText("User already exists", status = HttpStatusCode.Conflict)
                 }
