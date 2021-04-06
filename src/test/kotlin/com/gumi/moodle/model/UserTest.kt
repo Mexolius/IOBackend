@@ -7,7 +7,7 @@ import kotlin.test.assertTrue
 
 class UserTest {
     @Test
-    fun passwordHashTest(){
+    fun passwordHashTest() {
         val password = "secret"
         val user = User("Fname", "Lname", "email")
         user.hashPassword(password)
@@ -15,7 +15,7 @@ class UserTest {
     }
 
     @Test
-    fun rightPasswordTest(){
+    fun rightPasswordTest() {
         val password = "secret"
         val user = User("Fname", "Lname", "email")
         user.hashPassword(password)
@@ -23,7 +23,7 @@ class UserTest {
     }
 
     @Test
-    fun wrongPasswordTest(){
+    fun wrongPasswordTest() {
         val password = "secret"
         val other = "not secret"
         val user = User("Fname", "Lname", "email")

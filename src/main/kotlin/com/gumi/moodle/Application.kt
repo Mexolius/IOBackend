@@ -13,7 +13,7 @@ import org.litote.kmongo.coroutine.coroutine
 import org.litote.kmongo.reactivestreams.KMongo
 
 fun main(args: Array<String>): Unit =
-    io.ktor.server.netty.EngineMain.main(args)
+        io.ktor.server.netty.EngineMain.main(args)
 
 /**
  * Please note that you can use any other name instead of *module*.
@@ -35,7 +35,7 @@ fun Application.module(testing: Boolean = false) {
         }
     }
 
-    install(CORS){
+    install(CORS) {
         method(HttpMethod.Get)
         method(HttpMethod.Post)
         header(HttpHeaders.AccessControlAllowHeaders)
@@ -59,9 +59,9 @@ fun Application.module(testing: Boolean = false) {
 
             val client = KMongo.createClient("mongodb://localhost:27017").coroutine
             val users = client.getDatabase("test")
-                .getCollection<Jedi>()
-                .find()
-                .toList()
+                    .getCollection<Jedi>()
+                    .find()
+                    .toList()
             call.respondText("users: $users")
         }
         userRoutes()

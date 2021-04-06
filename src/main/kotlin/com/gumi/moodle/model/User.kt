@@ -5,12 +5,12 @@ import java.security.SecureRandom
 
 
 class User(
-    var firstName: String,
-    var lastName: String,
-    var email: String,
-    var password: String = "",
-    var salt: String = "",
-    var roles: List<Role> = listOf(Role.STUDENT)
+        var firstName: String,
+        var lastName: String,
+        var email: String,
+        var password: String = "",
+        var salt: String = "",
+        var roles: List<Role> = listOf(Role.STUDENT)
 ) {
     private val digestFunction = getDigestFunction("SHA-256") { salt }
 

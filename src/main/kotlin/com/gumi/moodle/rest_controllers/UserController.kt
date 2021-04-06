@@ -35,8 +35,8 @@ fun Application.userRoutes() {
             route("/user/{email}") {
                 get {
                     val email = call.parameters["email"] ?: return@get call.respondText(
-                        "Missing or malformed email",
-                        status = HttpStatusCode.BadRequest
+                            "Missing or malformed email",
+                            status = HttpStatusCode.BadRequest
                     )
                     val user = dao.getUser(email) ?: return@get call.respond(HttpStatusCode.NotFound)
                     call.respond(user)
