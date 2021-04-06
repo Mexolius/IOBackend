@@ -1,30 +1,12 @@
 package com.gumi.moodle.dao
 
 import com.gumi.moodle.model.User
-import org.litote.kmongo.coroutine.coroutine
-import org.litote.kmongo.reactivestreams.KMongo
+import org.litote.kmongo.coroutine.CoroutineCollection
 
-class UserDAO {
+class UserDAO : AbstractDAO<User, String>({ it.email }) {
 
-    private val client = KMongo.createClient("mongodb://localhost:27017").coroutine
-    private val database = client.getDatabase("IOtest")
-    private val collection = database.getCollection<User>("User")
-
-    suspend fun getUsers(): List<User> {
-        return collection.find().toList()
-    }
-
-    suspend fun addUser(user: User): Boolean {
-        if (getUser(user.email) != null) {
-            return false
-        }
-        user.hashPassword(user.password)
-        collection.insertOne(user)
-        return true
-    }
-
-    suspend fun getUser(email: String): User? {
-        return getUsers().find { it.email == email }
+    override fun getCollection(): CoroutineCollection<User> {
+        return database.getCollection("User")
     }
 
 }
