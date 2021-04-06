@@ -9,7 +9,7 @@ class UserTest {
     @Test
     fun passwordHashTest() {
         val password = "secret"
-        val user = User("Fname", "Lname", "email")
+        val user = User(null, "Fname", "Lname", "email")
         user.hashPassword(password)
         assertNotEquals(password, user.password)
     }
@@ -17,7 +17,7 @@ class UserTest {
     @Test
     fun rightPasswordTest() {
         val password = "secret"
-        val user = User("Fname", "Lname", "email")
+        val user = User(null, "Fname", "Lname", "email")
         user.hashPassword(password)
         assertTrue(user.checkPassword(password))
     }
@@ -26,7 +26,7 @@ class UserTest {
     fun wrongPasswordTest() {
         val password = "secret"
         val other = "not secret"
-        val user = User("Fname", "Lname", "email")
+        val user = User(null, "Fname", "Lname", "email")
         user.hashPassword(password)
         assertFalse(user.checkPassword(other))
     }

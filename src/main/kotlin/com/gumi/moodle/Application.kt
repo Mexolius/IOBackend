@@ -1,6 +1,7 @@
 package com.gumi.moodle
 
 import com.gumi.moodle.dao.UserDAO
+import com.gumi.moodle.rest_controllers.courseRoutes
 import com.gumi.moodle.rest_controllers.userRoutes
 import io.ktor.application.*
 import io.ktor.auth.*
@@ -13,7 +14,7 @@ import org.litote.kmongo.coroutine.coroutine
 import org.litote.kmongo.reactivestreams.KMongo
 
 fun main(args: Array<String>): Unit =
-        io.ktor.server.netty.EngineMain.main(args)
+    io.ktor.server.netty.EngineMain.main(args)
 
 /**
  * Please note that you can use any other name instead of *module*.
@@ -38,10 +39,13 @@ fun Application.module(testing: Boolean = false) {
     install(CORS) {
         method(HttpMethod.Get)
         method(HttpMethod.Post)
+        method(HttpMethod.Options)
         header(HttpHeaders.AccessControlAllowHeaders)
         header(HttpHeaders.ContentType)
         header(HttpHeaders.AccessControlAllowOrigin)
-        allowCredentials = true
+        header(HttpHeaders.AccessControlAllowMethods)
+        header(HttpHeaders.Authorization)
+        allowCredentials = false
         anyHost()
     }
 
@@ -59,16 +63,26 @@ fun Application.module(testing: Boolean = false) {
 
             val client = KMongo.createClient("mongodb://localhost:27017").coroutine
             val users = client.getDatabase("test")
-                    .getCollection<Jedi>()
-                    .find()
-                    .toList()
+                .getCollection<Jedi>()
+                .find()
+                .toList()
             call.respondText("users: $users")
         }
+        post("/generate") {
+            try {
+                Generator().insertToDB()
+                call.respond(HttpStatusCode.OK)
+            } catch (e: Exception) {
+                log.error("failed generating new data", e)
+                call.respond(HttpStatusCode.InternalServerError)
+            }
+        }
         userRoutes()
+        courseRoutes()
     }
 }
 
 suspend fun validateUser(credentials: UserPasswordCredential): Boolean {
-    val user = UserDAO().getUser(credentials.name) ?: return false
+    val user = UserDAO().getOne(credentials.name) ?: return false
     return user.checkPassword(credentials.password)
 }

@@ -5,12 +5,13 @@ import java.security.SecureRandom
 
 
 class User(
-        var firstName: String,
-        var lastName: String,
-        var email: String,
-        var password: String = "",
-        var salt: String = "",
-        var roles: List<Role> = listOf(Role.STUDENT)
+    var _id: String?,
+    var firstName: String,
+    var lastName: String,
+    var email: String,
+    var password: String = "",
+    var salt: String = "",
+    var roles: List<Role> = listOf(Role.STUDENT),
 ) {
     private val digestFunction = getDigestFunction("SHA-256") { salt }
 
@@ -31,9 +32,36 @@ class User(
     override fun toString(): String {
         return "$firstName $lastName  email: $email roles: $roles"
     }
+
+    override fun equals(other: Any?): Boolean { //this equals is for finding if user already exists in db, if there is a need to use traditional comparison please feel free to make this a separate method and swap it
+        if (this === other) return true
+        if (other !is User) return false
+        return email == other.email
+    }
+
+    override fun hashCode(): Int {
+        return email.hashCode()
+    }
+
+    companion object {
+        fun createUserWithPlaintextInput(
+            firstName: String,
+            lastName: String,
+            email: String,
+            password: String,
+            roles: List<Role>,
+        ): User {
+            return User(null, firstName, lastName, email, "", "", roles).apply { hashPassword(password) }
+        }
+
+        fun createUserWithPlaintextInput(
+            user: User,
+        ): User {
+            return createUserWithPlaintextInput(user.firstName, user.lastName, user.email, user.password, user.roles)
+        }
+    }
 }
 
-
-enum class Role {
-    ADMIN, STUDENT, TEACHER
+enum class Role(name: String) {
+    ADMIN("admin"), STUDENT("student"), TEACHER("teacher")
 }
