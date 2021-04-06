@@ -1,4 +1,4 @@
-package com.gumi.moodle.com.gumi.moodle.model
+package com.gumi.moodle.model
 
 class Course(
     var _id: String?,

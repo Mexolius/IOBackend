@@ -1,7 +1,7 @@
-package com.gumi.moodle.com.gumi.moodle.rest_controllers
+package com.gumi.moodle.rest_controllers
 
-import com.gumi.moodle.com.gumi.moodle.dao.CourseDAO
-import com.gumi.moodle.com.gumi.moodle.model.Course
+import com.gumi.moodle.dao.CourseDAO
+import com.gumi.moodle.model.Course
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.http.*
@@ -10,7 +10,7 @@ import io.ktor.response.*
 import io.ktor.routing.*
 
 
-class UserController
+class CoueseController
 
 fun Application.courseRoutes() {
     val dao = CourseDAO()

@@ -1,4 +1,4 @@
-package com.gumi.moodle.com.gumi.moodle.dao
+package com.gumi.moodle.dao
 
 import org.litote.kmongo.coroutine.CoroutineCollection
 import org.litote.kmongo.coroutine.coroutine

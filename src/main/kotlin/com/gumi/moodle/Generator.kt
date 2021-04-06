@@ -1,8 +1,8 @@
-package com.gumi.moodle.com.gumi.moodle
+package com.gumi.moodle
 
-import com.gumi.moodle.com.gumi.moodle.dao.CourseDAO
-import com.gumi.moodle.com.gumi.moodle.dao.UserDAO
-import com.gumi.moodle.com.gumi.moodle.model.Course
+import com.gumi.moodle.dao.CourseDAO
+import com.gumi.moodle.dao.UserDAO
+import com.gumi.moodle.model.Course
 import com.gumi.moodle.model.Role
 import com.gumi.moodle.model.User
 import kotlinx.coroutines.runBlocking
