@@ -10,8 +10,6 @@ import io.ktor.http.*
 import io.ktor.jackson.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import org.litote.kmongo.coroutine.coroutine
-import org.litote.kmongo.reactivestreams.KMongo
 import org.slf4j.event.Level
 
 fun main(args: Array<String>): Unit =
@@ -72,16 +70,6 @@ fun Application.module(testing: Boolean = false) {
                 call.respond(HttpStatusCode.OK)
             }
         }
-        get("/") {
-            data class Jedi(val name: String, val age: Int)
-
-            val client = KMongo.createClient("mongodb://localhost:27017").coroutine
-            val users = client.getDatabase("test")
-                .getCollection<Jedi>()
-                .find()
-                .toList()
-            call.respondText("users: $users")
-        }
         post("/generate") {
             try {
                 Generator().insertToDB()
@@ -97,8 +85,8 @@ fun Application.module(testing: Boolean = false) {
 }
 
 suspend fun validateUser(credentials: UserPasswordCredential): UserSession? {
-    val user = UserDAO().getOne(credentials.name) ?: return null
-    return if (user.checkPassword(credentials.password)) UserSession(
+    val user = UserDAO().getOne(credentials.name)
+    return if (user != null && user.checkPassword(credentials.password)) UserSession(
         credentials.name,
         user._id!!,
         user.roles
