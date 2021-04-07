@@ -12,7 +12,7 @@ import io.ktor.response.*
 import io.ktor.routing.*
 
 
-class CoueseController
+class CourseController
 
 fun Application.courseRoutes() {
     val dao = CourseDAO()

@@ -19,7 +19,7 @@ class Generator {
     suspend fun insertToDB() {
         var students = (1..20).map { newUser(it, true, false) }
         var teachers = (21..30).map { newUser(it, false, true) }
-        val admin = User.createUserWithPlaintextInput("aa", "bb", "aa@aa.aa", "aa", listOf(Role.ADMIN))
+        val admin = User.createUserWithPlaintextInput("aa", "bb", "aa@aa.aa", "aa", setOf(Role.ADMIN))
         UserDAO().apply { drop() }.addAll(students + teachers + admin)
 
         students = UserDAO().getAll()
