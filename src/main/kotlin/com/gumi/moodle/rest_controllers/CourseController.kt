@@ -26,15 +26,17 @@ fun Application.courseRoutes() {
                     call.respond(courses)
                 }
             }
-            route("/course") {
-                post {
-                    val courses = call.receive<Course>()
-                    dao.add(courses)
+            withRole(ADMIN) {
+                route("/course") {
+                    post {
+                        val courses = call.receive<Course>()
+                        dao.add(courses)
 
-                    call.respond(HttpStatusCode.OK)
+                        call.respond(HttpStatusCode.OK)
+                    }
                 }
             }
-            withRole(ADMIN, TEACHER, ID) {
+            withRole(ADMIN, ID) {
                 route("/courses/of-student/{id}") {
                     get {
                         val id = call.parameters["id"] ?: return@get call.respondText(

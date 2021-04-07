@@ -28,22 +28,22 @@ fun Application.userRoutes() {
                         call.respond(users)
                     }
                 }
-            }
-            route("/user") {
-                post {
-                    val user = call.receive<User>()
-                    dao.add(User.createUserWithPlaintextInput(user))
-                    call.respond(HttpStatusCode.OK)
+                route("/user") {
+                    post {
+                        val user = call.receive<User>()
+                        dao.add(User.createUserWithPlaintextInput(user))
+                        call.respond(HttpStatusCode.OK)
+                    }
                 }
-            }
-            route("/user/{email}") {
-                get {
-                    val email = call.parameters["email"] ?: return@get call.respondText(
-                        "Missing or malformed email",
-                        status = HttpStatusCode.BadRequest
-                    )
-                    val user = dao.getOne(email) ?: return@get call.respond(HttpStatusCode.NotFound)
-                    call.respond(user)
+                route("/user/{email}") {
+                    get {
+                        val email = call.parameters["email"] ?: return@get call.respondText(
+                            "Missing or malformed email",
+                            status = HttpStatusCode.BadRequest
+                        )
+                        val user = dao.getOne(email) ?: return@get call.respond(HttpStatusCode.NotFound)
+                        call.respond(user)
+                    }
                 }
             }
         }
