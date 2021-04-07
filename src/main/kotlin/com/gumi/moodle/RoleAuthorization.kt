@@ -8,8 +8,7 @@ import io.ktor.routing.*
 import io.ktor.util.*
 import io.ktor.util.pipeline.*
 
-data class UserSession(val name: String, val roles: Set<Role> = emptySet()) : Principal
-enum class RequireRoles { ANY, ALL }
+data class UserSession(val name: String, val id: String, val roles: Set<Role> = emptySet()) : Principal
 class AuthorizationException(override val message: String) : Exception(message)
 
 class RoleAuthorization(config: Configuration) {
@@ -21,8 +20,7 @@ class RoleAuthorization(config: Configuration) {
 
     fun interceptPipeline(
         pipeline: ApplicationCallPipeline,
-        roles: Set<Role>,
-        require: RequireRoles
+        roles: Set<Role>
     ) {
         pipeline.insertPhaseAfter(ApplicationCallPipeline.Features, Authentication.ChallengePhase)
         pipeline.insertPhaseAfter(Authentication.ChallengePhase, AuthorizationPhase)
@@ -30,24 +28,12 @@ class RoleAuthorization(config: Configuration) {
         pipeline.intercept(AuthorizationPhase) {
             val principal =
                 call.authentication.principal<Principal>() ?: throw AuthorizationException("Missing principal")
+            val callUserID = call.parameters["id"]
+            val sessionUserID = (principal as UserSession).id
             val userRoles = getRoles(principal)
-            val denyReasons = mutableListOf<String>()
-            when (require) {
-                RequireRoles.ALL -> {
-                    val missing = roles - userRoles
-                    if (missing.isNotEmpty()) {
-                        denyReasons += "Principal $principal lacks required role(s): $missing"
-                    }
-                }
-                RequireRoles.ANY -> {
-                    if (roles.none { it in userRoles }) {
-                        denyReasons += "Principal $principal has none of the sufficient role(s): $roles"
-                    }
-                }
-            }
 
-            if (denyReasons.isNotEmpty()) {
-                val message = denyReasons.joinToString(". ")
+            if (roles.none { if (it == Role.ID) callUserID == sessionUserID else it in userRoles }) {
+                val message = "Principal $principal has none of the sufficient role(s): $roles"
                 call.application.environment.log.warn("Authorization failed for ${call.request.path()}. $message")
                 throw AuthorizationException(message)
             }
@@ -78,23 +64,17 @@ class AuthorizedRouteSelector(private val description: String) :
     override fun toString(): String = "(authorize ${description})"
 }
 
-fun Route.withRole(role: Role, build: Route.() -> Unit) =
-    authorizedRoute(setOf(role), RequireRoles.ALL, build)
 
-fun Route.withAllRoles(vararg roles: Role, build: Route.() -> Unit) =
-    authorizedRoute(roles.toSet(), RequireRoles.ALL, build)
-
-fun Route.withAnyRole(vararg roles: Role, build: Route.() -> Unit) =
-    authorizedRoute(roles.toSet(), RequireRoles.ANY, build)
+fun Route.withRole(vararg roles: Role, build: Route.() -> Unit) =
+    authorizedRoute(roles.toSet(), build)
 
 private fun Route.authorizedRoute(
     roles: Set<Role>,
-    require: RequireRoles,
     build: Route.() -> Unit
 ): Route {
-    val description = "$require of $roles"
+    val description = "require any of roles: $roles"
     val authorizedRoute = createChild(AuthorizedRouteSelector(description))
-    application.feature(RoleAuthorization).interceptPipeline(authorizedRoute, roles, require)
+    application.feature(RoleAuthorization).interceptPipeline(authorizedRoute, roles)
     authorizedRoute.build()
     return authorizedRoute
 }

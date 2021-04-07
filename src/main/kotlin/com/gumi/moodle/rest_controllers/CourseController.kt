@@ -2,6 +2,8 @@ package com.gumi.moodle.rest_controllers
 
 import com.gumi.moodle.dao.CourseDAO
 import com.gumi.moodle.model.Course
+import com.gumi.moodle.model.Role.*
+import com.gumi.moodle.withRole
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.http.*
@@ -30,27 +32,31 @@ fun Application.courseRoutes() {
                     call.respond(HttpStatusCode.OK)
                 }
             }
-            route("/courses/of-student/{id}") {
-                get {
-                    val id = call.parameters["id"] ?: return@get call.respondText(
-                        "Missing or malformed id",
-                        status = HttpStatusCode.BadRequest
-                    )
-                    val courses = dao.getAll().filter { it.students.containsKey(id) }
+            withRole(ADMIN, TEACHER, ID) {
+                route("/courses/of-student/{id}") {
+                    get {
+                        val id = call.parameters["id"] ?: return@get call.respondText(
+                            "Missing or malformed id",
+                            status = HttpStatusCode.BadRequest
+                        )
+                        val courses = dao.getAll().filter { it.students.containsKey(id) }
 
-                    call.respond(courses)
+                        call.respond(courses)
+                    }
                 }
             }
-            route("/courses/of-teacher/{id}") {
-                get {
-                    val id = call.parameters["id"] ?: return@get call.respondText(
-                        "Missing or malformed id",
-                        status = HttpStatusCode.BadRequest
-                    )
+            withRole(ADMIN, ID) {
+                route("/courses/of-teacher/{id}") {
+                    get {
+                        val id = call.parameters["id"] ?: return@get call.respondText(
+                            "Missing or malformed id",
+                            status = HttpStatusCode.BadRequest
+                        )
 
-                    val courses = dao.getAll().filter { id in it.teachers }
+                        val courses = dao.getAll().filter { id in it.teachers }
 
-                    call.respond(courses)
+                        call.respond(courses)
+                    }
                 }
             }
         }

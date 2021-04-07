@@ -40,6 +40,12 @@ fun Application.module(testing: Boolean = false) {
         }
     }
 
+    install(StatusPages) {
+        exception<AuthorizationException> {
+            call.respond(HttpStatusCode.Forbidden)
+        }
+    }
+
     install(RoleAuthorization) {
         getRoles = { (it as UserSession).roles }
     }
@@ -92,5 +98,9 @@ fun Application.module(testing: Boolean = false) {
 
 suspend fun validateUser(credentials: UserPasswordCredential): UserSession? {
     val user = UserDAO().getOne(credentials.name) ?: return null
-    return if (user.checkPassword(credentials.password)) UserSession(credentials.name, user.roles) else null
+    return if (user.checkPassword(credentials.password)) UserSession(
+        credentials.name,
+        user._id!!,
+        user.roles
+    ) else null
 }

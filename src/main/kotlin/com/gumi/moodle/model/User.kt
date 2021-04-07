@@ -63,5 +63,8 @@ class User(
 }
 
 enum class Role(name: String) {
-    ADMIN("admin"), STUDENT("student"), TEACHER("teacher")
+    ADMIN("admin"),
+    STUDENT("student"),
+    TEACHER("teacher"),
+    ID("id")
 }
