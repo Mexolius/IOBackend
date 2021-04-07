@@ -2,4 +2,6 @@
 
 Student grading app.
 
-# <span style="color:red">Requires mongodb service at localhost:27017 (default for mongo)</span>
+### Requires mongodb service at localhost:27017 (default for mongo)
+
+Authorization is based on https://github.com/ximedes/ktor-authorization

@@ -31,5 +31,4 @@ class UserTest {
         assertFalse(user.checkPassword(other))
     }
 
-
 }
