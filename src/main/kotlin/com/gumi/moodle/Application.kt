@@ -10,8 +10,7 @@ import io.ktor.http.*
 import io.ktor.jackson.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import org.litote.kmongo.coroutine.coroutine
-import org.litote.kmongo.reactivestreams.KMongo
+import org.slf4j.event.Level
 
 fun main(args: Array<String>): Unit =
     io.ktor.server.netty.EngineMain.main(args)
@@ -24,7 +23,10 @@ fun main(args: Array<String>): Unit =
 @kotlin.jvm.JvmOverloads
 fun Application.module(testing: Boolean = false) {
 
-    install(CallLogging)
+    install(CallLogging) {
+        level = Level.INFO
+    }
+
     install(ContentNegotiation) {
         jackson()
     }
@@ -32,8 +34,18 @@ fun Application.module(testing: Boolean = false) {
     install(Authentication) {
         basic(name = "basicAuth") {
             realm = "Ktor Server"
-            validate { credentials -> if (validateUser(credentials)) UserIdPrincipal(credentials.name) else null }
+            validate { credentials -> validateUser(credentials) }
         }
+    }
+
+    install(StatusPages) {
+        exception<AuthorizationException> {
+            call.respond(HttpStatusCode.Forbidden)
+        }
+    }
+
+    install(RoleAuthorization) {
+        getRoles = { (it as UserSession).roles }
     }
 
     install(CORS) {
@@ -58,16 +70,6 @@ fun Application.module(testing: Boolean = false) {
                 call.respond(HttpStatusCode.OK)
             }
         }
-        get("/") {
-            data class Jedi(val name: String, val age: Int)
-
-            val client = KMongo.createClient("mongodb://localhost:27017").coroutine
-            val users = client.getDatabase("test")
-                .getCollection<Jedi>()
-                .find()
-                .toList()
-            call.respondText("users: $users")
-        }
         post("/generate") {
             try {
                 Generator().insertToDB()
@@ -82,7 +84,11 @@ fun Application.module(testing: Boolean = false) {
     }
 }
 
-suspend fun validateUser(credentials: UserPasswordCredential): Boolean {
-    val user = UserDAO().getOne(credentials.name) ?: return false
-    return user.checkPassword(credentials.password)
+suspend fun validateUser(credentials: UserPasswordCredential): UserSession? {
+    val user = UserDAO().getOne(credentials.name)
+    return if (user != null && user.checkPassword(credentials.password)) UserSession(
+        credentials.name,
+        user._id!!,
+        user.roles
+    ) else null
 }

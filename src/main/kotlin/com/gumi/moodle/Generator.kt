@@ -19,7 +19,7 @@ class Generator {
     suspend fun insertToDB() {
         var students = (1..20).map { newUser(it, true, false) }
         var teachers = (21..30).map { newUser(it, false, true) }
-        val admin = User.createUserWithPlaintextInput("aa", "bb", "aa@aa.aa", "aa", listOf(Role.ADMIN))
+        val admin = User.createUserWithPlaintextInput("aa", "bb", "aa@aa.aa", "aa", setOf(Role.ADMIN))
         UserDAO().apply { drop() }.addAll(students + teachers + admin)
 
         students = UserDAO().getAll()
@@ -30,7 +30,7 @@ class Generator {
     }
 
     private fun newUser(number: Int, isStudent: Boolean, isTeacher: Boolean): User {
-        val roles = mutableListOf<Role>()
+        val roles = mutableSetOf<Role>()
         if (isStudent) roles.add(Role.STUDENT)
         if (isTeacher) roles.add(Role.TEACHER)
         return User.createUserWithPlaintextInput(
@@ -43,10 +43,10 @@ class Generator {
     }
 
     private fun newCourse(number: Int, students: List<User>, teachers: List<User>): Course {
-        val teachers = getRandomSublist(teachers, Random.nextInt(1, 3))
-        val students = getRandomSublist(students, Random.nextInt(0, 10))
-        val studentMap = students.map { it._id!! to Unit }.toMap()
-        return Course(null, "course$number", "example description", 100, studentMap, teachers.map { it._id!! })
+        val teachersSublist = getRandomSublist(teachers, Random.nextInt(1, 3))
+        val studentsSublist = getRandomSublist(students, Random.nextInt(0, 10))
+        val studentMap = studentsSublist.associate { it._id!! to Unit }
+        return Course(null, "course$number", "example description", 100, studentMap, teachersSublist.map { it._id!! })
     }
 
     private fun <T> getRandomElement(list: List<T>): T {

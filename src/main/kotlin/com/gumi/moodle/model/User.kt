@@ -11,7 +11,7 @@ class User(
     var email: String,
     var password: String = "",
     var salt: String = "",
-    var roles: List<Role> = listOf(Role.STUDENT),
+    var roles: Set<Role> = setOf(Role.STUDENT),
 ) {
     private val digestFunction = getDigestFunction("SHA-256") { salt }
 
@@ -49,7 +49,7 @@ class User(
             lastName: String,
             email: String,
             password: String,
-            roles: List<Role>,
+            roles: Set<Role>,
         ): User {
             return User(null, firstName, lastName, email, "", "", roles).apply { hashPassword(password) }
         }
@@ -63,5 +63,8 @@ class User(
 }
 
 enum class Role(name: String) {
-    ADMIN("admin"), STUDENT("student"), TEACHER("teacher")
+    ADMIN("admin"),
+    STUDENT("student"),
+    TEACHER("teacher"),
+    ID("id")
 }
