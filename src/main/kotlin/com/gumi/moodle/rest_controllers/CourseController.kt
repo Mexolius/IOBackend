@@ -1,8 +1,10 @@
 package com.gumi.moodle.rest_controllers
 
+import com.gumi.moodle.IDField.ID
 import com.gumi.moodle.dao.CourseDAO
 import com.gumi.moodle.model.Course
-import com.gumi.moodle.model.Role.*
+import com.gumi.moodle.model.Role.ADMIN
+import com.gumi.moodle.model.Role.TEACHER
 import com.gumi.moodle.withRole
 import io.ktor.application.*
 import io.ktor.auth.*
@@ -26,7 +28,7 @@ fun Application.courseRoutes() {
                     call.respond(courses)
                 }
             }
-            withRole(ADMIN) {
+            withRole(ADMIN, TEACHER) {
                 route("/course") {
                     post {
                         val courses = call.receive<Course>()
@@ -36,7 +38,7 @@ fun Application.courseRoutes() {
                     }
                 }
             }
-            withRole(ADMIN, ID) {
+            withRole(ADMIN, idField = ID) {
                 route("/courses/of-student/{id}") {
                     get {
                         val id = call.parameters["id"] ?: return@get call.respondText(
@@ -49,7 +51,7 @@ fun Application.courseRoutes() {
                     }
                 }
             }
-            withRole(ADMIN, ID) {
+            withRole(ADMIN, idField = ID) {
                 route("/courses/of-teacher/{id}") {
                     get {
                         val id = call.parameters["id"] ?: return@get call.respondText(
