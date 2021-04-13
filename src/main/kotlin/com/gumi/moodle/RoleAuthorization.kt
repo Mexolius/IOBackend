@@ -8,7 +8,15 @@ import io.ktor.routing.*
 import io.ktor.util.*
 import io.ktor.util.pipeline.*
 
-data class UserSession(val name: String, val id: String, val roles: Set<Role> = emptySet()) : Principal
+data class UserSession(val email: String, val id: String, val roles: Set<Role> = emptySet()) : Principal
+enum class IDField(val getter: (UserSession) -> String) {
+    NONE({ "none" }),
+    EMAIL(UserSession::email),
+    ID(UserSession::id);
+
+    var callParameterName: String = name
+}
+
 class AuthorizationException(override val message: String) : Exception(message)
 
 class RoleAuthorization(config: Configuration) {
@@ -20,6 +28,7 @@ class RoleAuthorization(config: Configuration) {
 
     fun interceptPipeline(
         pipeline: ApplicationCallPipeline,
+        idField: IDField,
         roles: Set<Role>
     ) {
         pipeline.insertPhaseAfter(ApplicationCallPipeline.Features, Authentication.ChallengePhase)
@@ -28,12 +37,13 @@ class RoleAuthorization(config: Configuration) {
         pipeline.intercept(AuthorizationPhase) {
             val principal =
                 call.authentication.principal<Principal>() ?: throw AuthorizationException("Missing principal")
-            val callUserID = call.parameters["id"]
-            val sessionUserID = (principal as UserSession).id
+            val callIDValue = call.parameters[idField.callParameterName] ?: ""
+            val sessionIDValue = idField.getter(principal as UserSession)
             val userRoles = getRoles(principal)
 
-            if (roles.none { if (it == Role.ID) callUserID == sessionUserID else it in userRoles }) {
-                val message = "Principal $principal has none of the sufficient role(s): $roles"
+            if (callIDValue != sessionIDValue && roles.none { it in userRoles }) {
+                val message =
+                    "Principal $principal has none of the sufficient role(s): $roles and doesn't match value at ${idField.name}"
                 call.application.environment.log.warn("Authorization failed for ${call.request.path()}. $message")
                 throw AuthorizationException(message)
             }
@@ -65,16 +75,18 @@ class AuthorizedRouteSelector(private val description: String) :
 }
 
 
-fun Route.withRole(vararg roles: Role, build: Route.() -> Unit) =
-    authorizedRoute(roles.toSet(), build)
+fun Route.withRole(vararg roles: Role, idField: IDField = IDField.NONE, build: Route.() -> Unit) =
+    authorizedRoute(idField, roles.toSet(), build)
 
 private fun Route.authorizedRoute(
+    idField: IDField,
     roles: Set<Role>,
     build: Route.() -> Unit
 ): Route {
-    val description = "require any of roles: $roles"
+    val description =
+        "require any of roles: $roles" + if (idField != IDField.NONE) " and matching ${idField.name}" else ""
     val authorizedRoute = createChild(AuthorizedRouteSelector(description))
-    application.feature(RoleAuthorization).interceptPipeline(authorizedRoute, roles)
+    application.feature(RoleAuthorization).interceptPipeline(authorizedRoute, idField, roles)
     authorizedRoute.build()
     return authorizedRoute
 }

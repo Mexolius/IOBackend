@@ -4,6 +4,8 @@ import io.ktor.util.*
 import java.security.SecureRandom
 
 
+enum class Role { ADMIN, STUDENT, TEACHER }
+
 class User(
     var _id: String?,
     var firstName: String,
@@ -60,11 +62,4 @@ class User(
             return createUserWithPlaintextInput(user.firstName, user.lastName, user.email, user.password, user.roles)
         }
     }
-}
-
-enum class Role(name: String) {
-    ADMIN("admin"),
-    STUDENT("student"),
-    TEACHER("teacher"),
-    ID("id")
 }
