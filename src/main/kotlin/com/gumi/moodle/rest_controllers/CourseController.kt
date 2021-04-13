@@ -31,8 +31,12 @@ fun Application.courseRoutes() {
             withRole(ADMIN, TEACHER) {
                 route("/course") {
                     post {
-                        val courses = call.receive<Course>()
-                        dao.add(courses)
+                        val course = call.receive<Course>()
+                        if (dao.getOne(course.name) != null) return@post call.respondText(
+                            "Duplicate course name",
+                            status = HttpStatusCode.Conflict
+                        )
+                        dao.add(course)
 
                         call.respond(HttpStatusCode.OK)
                     }
@@ -62,6 +66,26 @@ fun Application.courseRoutes() {
                         val courses = dao.getAll().filter { id in it.teachers }
 
                         call.respond(courses)
+                    }
+                }
+            }
+            withRole(ADMIN, idField = ID.apply { callParameterName = "user_id" }) {
+                route("/courses/{user_id}/{course_id}") {
+                    get {
+                        call.parameters["user_id"] ?: return@get call.respondText(
+                            "Missing or malformed user id",
+                            status = HttpStatusCode.BadRequest
+                        )
+                        val courseID = call.parameters["course_id"] ?: return@get call.respondText(
+                            "Missing or malformed course id",
+                            status = HttpStatusCode.BadRequest
+                        )
+                        val course = dao.getOne(courseID) { it._id ?: "" } ?: return@get call.respondText(
+                            "No course matches requested course id",
+                            status = HttpStatusCode.BadRequest
+                        )
+
+                        call.respond(course)
                     }
                 }
             }

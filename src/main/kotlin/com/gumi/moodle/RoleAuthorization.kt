@@ -12,7 +12,9 @@ data class UserSession(val email: String, val id: String, val roles: Set<Role> =
 enum class IDField(val getter: (UserSession) -> String) {
     NONE({ "none" }),
     EMAIL(UserSession::email),
-    ID(UserSession::id)
+    ID(UserSession::id);
+
+    var callParameterName: String = name
 }
 
 class AuthorizationException(override val message: String) : Exception(message)
@@ -35,7 +37,7 @@ class RoleAuthorization(config: Configuration) {
         pipeline.intercept(AuthorizationPhase) {
             val principal =
                 call.authentication.principal<Principal>() ?: throw AuthorizationException("Missing principal")
-            val callIDValue = call.parameters[idField.name] ?: ""
+            val callIDValue = call.parameters[idField.callParameterName] ?: ""
             val sessionIDValue = idField.getter(principal as UserSession)
             val userRoles = getRoles(principal)
 

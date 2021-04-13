@@ -5,6 +5,6 @@ class Course(
     var name: String,
     var description: String,
     var studentLimit: Int = 100,
-    var students: Map<String, Unit> = mapOf<String, Unit>(),  //student id ->
+    var students: Map<String, Unit> = mapOf(),  //student id ->
     var teachers: List<String>,  //list of teacher ids
 )

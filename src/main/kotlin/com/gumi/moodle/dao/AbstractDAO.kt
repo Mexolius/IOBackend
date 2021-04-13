@@ -30,8 +30,8 @@ abstract class AbstractDAO<T : Any, U>(val extract: (T) -> U) {
         return obj in getAll()
     }
 
-    suspend fun getOne(arg: U): T? { //this should get optimized in the future
-        return getAll().find { extract(it) == arg }
+    suspend fun getOne(arg: U, localExtract: (T) -> U = extract): T? { //this should get optimized in the future
+        return getAll().find { localExtract(it) == arg }
     }
 
     suspend fun drop() {
