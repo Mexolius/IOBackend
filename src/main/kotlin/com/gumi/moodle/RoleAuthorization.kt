@@ -9,12 +9,10 @@ import io.ktor.util.*
 import io.ktor.util.pipeline.*
 
 data class UserSession(val email: String, val id: String, val roles: Set<Role> = emptySet()) : Principal
-enum class IDField(val getter: (UserSession) -> String) {
-    NONE({ "none" }),
-    EMAIL(UserSession::email),
-    ID(UserSession::id);
-
-    var callParameterName: String = name
+sealed class IDField(val name: String, val getter: (UserSession) -> String) {
+    class NONE : IDField("none", { "none" })
+    class EMAIL(name: String = "email") : IDField(name, UserSession::email)
+    class ID(name: String = "id") : IDField(name, UserSession::id)
 }
 
 class AuthorizationException(override val message: String) : Exception(message)
@@ -37,7 +35,7 @@ class RoleAuthorization(config: Configuration) {
         pipeline.intercept(AuthorizationPhase) {
             val principal =
                 call.authentication.principal<Principal>() ?: throw AuthorizationException("Missing principal")
-            val callIDValue = call.parameters[idField.callParameterName] ?: ""
+            val callIDValue = call.parameters[idField.name] ?: ""
             val sessionIDValue = idField.getter(principal as UserSession)
             val userRoles = getRoles(principal)
 
@@ -75,7 +73,7 @@ class AuthorizedRouteSelector(private val description: String) :
 }
 
 
-fun Route.withRole(vararg roles: Role, idField: IDField = IDField.NONE, build: Route.() -> Unit) =
+fun Route.withRole(vararg roles: Role, idField: IDField = IDField.NONE(), build: Route.() -> Unit) =
     authorizedRoute(idField, roles.toSet(), build)
 
 private fun Route.authorizedRoute(
@@ -84,7 +82,7 @@ private fun Route.authorizedRoute(
     build: Route.() -> Unit
 ): Route {
     val description =
-        "require any of roles: $roles" + if (idField != IDField.NONE) " and matching ${idField.name}" else ""
+        "require any of roles: $roles" + if (idField != IDField.NONE()) " and matching ${idField.name}" else ""
     val authorizedRoute = createChild(AuthorizedRouteSelector(description))
     application.feature(RoleAuthorization).interceptPipeline(authorizedRoute, idField, roles)
     authorizedRoute.build()
