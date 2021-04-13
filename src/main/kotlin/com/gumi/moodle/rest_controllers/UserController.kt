@@ -37,7 +37,7 @@ fun Application.userRoutes() {
                     }
                 }
             }
-            withRole(ADMIN, idField = EMAIL) {
+            withRole(ADMIN, idField = EMAIL()) {
                 route("/user/{email}") {
                     get {
                         val email = call.parameters["email"] ?: return@get call.respondText(

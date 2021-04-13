@@ -45,8 +45,9 @@ class Generator {
     private fun newCourse(number: Int, students: List<User>, teachers: List<User>): Course {
         val teachersSublist = getRandomSublist(teachers, Random.nextInt(1, 3))
         val studentsSublist = getRandomSublist(students, Random.nextInt(0, 10))
-        val studentMap = studentsSublist.associate { it._id!! to Unit }
-        return Course(null, "course$number", "example description", 100, studentMap, teachersSublist.map { it._id!! })
+        val studentMap = studentsSublist.associate { it._id!! to arrayOf<Unit>() }
+        return Course(null, "course$number", "example description", 100,
+            studentMap as MutableMap<String, Array<Unit>>, teachersSublist.map { it._id!! })
     }
 
     private fun <T> getRandomElement(list: List<T>): T {
