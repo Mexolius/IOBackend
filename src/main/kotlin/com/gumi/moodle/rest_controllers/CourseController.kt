@@ -42,7 +42,7 @@ fun Application.courseRoutes() {
                     }
                 }
             }
-            withRole(ADMIN, idField = ID()) {
+            withRole(ADMIN,STUDENT, idField = ID()) {
                 route("/courses/of-student/{id}") {
                     get {
                         val id = call.parameters["id"] ?: return@get call.respondText(
@@ -55,7 +55,7 @@ fun Application.courseRoutes() {
                     }
                 }
             }
-            withRole(ADMIN, idField = ID()) {
+            withRole(ADMIN, TEACHER, idField = ID()) {
                 route("/courses/of-teacher/{id}") {
                     get {
                         val id = call.parameters["id"] ?: return@get call.respondText(
@@ -69,7 +69,7 @@ fun Application.courseRoutes() {
                     }
                 }
             }
-            withRole(ADMIN, STUDENT, idField = ID("user_id")) {
+            withRole(ADMIN, STUDENT, TEACHER, idField = ID("user_id")) {
                 route("/courses/{user_id}/{course_id}") {
                     get {
                         val userID = call.parameters["user_id"] ?: return@get call.respondText(
