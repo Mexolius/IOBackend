@@ -12,7 +12,7 @@ class User(
     var password: String = "",
     var salt: String = "",
     var roles: Set<Role> = setOf(Role.STUDENT),
-) {
+)  {
     private val digestFunction = getDigestFunction("SHA-256") { salt }
 
     fun hashPassword(plaintext: String) {
@@ -49,7 +49,7 @@ class User(
             lastName: String,
             email: String,
             password: String,
-            roles: Set<Role>,
+            roles: Set<Role> = setOf(Role.STUDENT),
         ): User {
             return User(null, firstName, lastName, email, "", "", roles).apply { hashPassword(password) }
         }
@@ -60,11 +60,4 @@ class User(
             return createUserWithPlaintextInput(user.firstName, user.lastName, user.email, user.password, user.roles)
         }
     }
-}
-
-enum class Role(name: String) {
-    ADMIN("admin"),
-    STUDENT("student"),
-    TEACHER("teacher"),
-    ID("id")
 }

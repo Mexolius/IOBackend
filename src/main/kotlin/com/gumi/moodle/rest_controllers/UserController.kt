@@ -1,8 +1,8 @@
 package com.gumi.moodle.rest_controllers
 
+import com.gumi.moodle.IDField.EMAIL
 import com.gumi.moodle.dao.UserDAO
 import com.gumi.moodle.model.Role.ADMIN
-import com.gumi.moodle.model.Role.STUDENT
 import com.gumi.moodle.model.User
 import com.gumi.moodle.withRole
 import io.ktor.application.*
@@ -35,6 +35,8 @@ fun Application.userRoutes() {
                         call.respond(HttpStatusCode.OK)
                     }
                 }
+            }
+            withRole(ADMIN, idField = EMAIL()) {
                 route("/user/{email}") {
                     get {
                         val email = call.parameters["email"] ?: return@get call.respondText(
@@ -50,7 +52,6 @@ fun Application.userRoutes() {
         route("/register") {
             post {
                 val user = call.receive<User>()
-                user.roles = setOf(STUDENT)
                 val result = dao.add(User.createUserWithPlaintextInput(user))
                 if (!result) {
                     return@post call.respondText("User already exists", status = HttpStatusCode.Conflict)
