@@ -1,40 +1,42 @@
 package com.gumi.moodle.dao
 
+import org.bson.conversions.Bson
+import org.litote.kmongo.EMPTY_BSON
 import org.litote.kmongo.coroutine.CoroutineCollection
 import org.litote.kmongo.coroutine.coroutine
 import org.litote.kmongo.reactivestreams.KMongo
 
-abstract class AbstractDAO<T : Any, U>(val extract: (T) -> U) {
+abstract class AbstractDAO<T : Any, U>(private val defaultQueryCreator: (U) -> Bson) {
 
     private val client = KMongo.createClient("mongodb://localhost:27017").coroutine
-    val database = client.getDatabase("IOtest")
+    protected val database = client.getDatabase("IOtest")
 
-    abstract fun getCollection(): CoroutineCollection<T> //retified generic in collection was breaking stuff when tried to be generified
+    protected abstract fun getCollection(): CoroutineCollection<T>
+    abstract suspend fun exists(obj: T): Boolean
 
-    suspend fun getAll(): List<T> {
-        return getCollection().find().toList()
-    }
+    suspend fun getAll(query: Bson = EMPTY_BSON): List<T> =
+        getCollection().find(query).toList()
 
-    suspend fun add(obj: T): Boolean {
-        if (exists(obj)) {
-            return false
-        }
-        return getCollection().insertOne(obj).wasAcknowledged()
-    }
+    suspend fun add(obj: T): Boolean =
+        if (exists(obj)) false
+        else getCollection().insertOne(obj).wasAcknowledged()
 
-    suspend fun addAll(obj: List<T>): Boolean {
-        return getCollection().insertMany(obj).wasAcknowledged()
-    }
+    suspend fun addAll(obj: List<T>): Boolean =
+        getCollection().insertMany(obj).wasAcknowledged()
 
-    private suspend fun exists(obj: T): Boolean { //this should get optimized in the future
-        return obj in getAll()
-    }
+    suspend fun getOne(
+        value: U,
+        queryCreator: (U) -> Bson = defaultQueryCreator
+    ): T? =
+        getCollection().findOne(queryCreator(value))
 
-    suspend fun getOne(arg: U, localExtract: (T) -> U = extract): T? { //this should get optimized in the future
-        return getAll().find { localExtract(it) == arg }
-    }
+    suspend fun updateOne(
+        value: U,
+        update: Bson,
+        queryCreator: (U) -> Bson = defaultQueryCreator
+    ): Boolean =
+        getCollection().updateOne(queryCreator(value), update).wasAcknowledged()
 
-    suspend fun drop() {
+    suspend fun drop() =
         getCollection().drop()
-    }
 }

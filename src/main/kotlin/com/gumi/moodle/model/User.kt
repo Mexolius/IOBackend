@@ -4,8 +4,6 @@ import io.ktor.util.*
 import java.security.SecureRandom
 
 
-enum class Role { ADMIN, STUDENT, TEACHER }
-
 class User(
     var _id: String?,
     var firstName: String,
@@ -14,7 +12,7 @@ class User(
     var password: String = "",
     var salt: String = "",
     var roles: Set<Role> = setOf(Role.STUDENT),
-) {
+)  {
     private val digestFunction = getDigestFunction("SHA-256") { salt }
 
     fun hashPassword(plaintext: String) {
@@ -51,7 +49,7 @@ class User(
             lastName: String,
             email: String,
             password: String,
-            roles: Set<Role>,
+            roles: Set<Role> = setOf(Role.STUDENT),
         ): User {
             return User(null, firstName, lastName, email, "", "", roles).apply { hashPassword(password) }
         }
