@@ -50,6 +50,7 @@ fun Application.courseRoutes() {
                             status = HttpStatusCode.BadRequest
                         )
                         val courses = dao.getAll().filter { it.students.containsKey(id) }
+                        courses.forEach { it.filterStudents(id) }
 
                         call.respond(courses)
                     }

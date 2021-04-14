@@ -1,6 +1,6 @@
 package com.gumi.moodle.model
 
-class Course(
+data class Course(
     var _id: String?,
     var name: String,
     var description: String,
