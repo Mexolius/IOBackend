@@ -3,6 +3,7 @@ package com.gumi.moodle
 import com.gumi.moodle.dao.CourseDAO
 import com.gumi.moodle.dao.UserDAO
 import com.gumi.moodle.model.Course
+import com.gumi.moodle.model.Grade
 import com.gumi.moodle.model.Role
 import com.gumi.moodle.model.User
 import kotlinx.coroutines.runBlocking
@@ -45,9 +46,16 @@ class Generator {
     private fun newCourse(number: Int, students: List<User>, teachers: List<User>): Course {
         val teachersSublist = getRandomSublist(teachers, Random.nextInt(1, 3))
         val studentsSublist = getRandomSublist(students, Random.nextInt(0, 10))
-        val studentMap = studentsSublist.associate { it._id!! to arrayOf<Unit>() }
-        return Course(null, "course$number", "example description", 100,
-            studentMap as MutableMap<String, Array<Unit>>, teachersSublist.map { it._id!! })
+        val studentMap = studentsSublist.associate { it._id!! to listOf(Grade("grade1", Random.nextInt(100))) }
+        return Course(
+            null,
+            "course$number",
+            "example description",
+            100,
+            studentMap as MutableMap<String, List<Grade>>,
+            teachersSublist.map { it._id!! },
+            listOf(Grade("grade1", 100))
+        )
     }
 
     private fun <T> getRandomElement(list: List<T>): T {
