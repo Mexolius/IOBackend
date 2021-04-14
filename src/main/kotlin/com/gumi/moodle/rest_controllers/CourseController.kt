@@ -4,6 +4,7 @@ import com.gumi.moodle.IDField.ID
 import com.gumi.moodle.UserSession
 import com.gumi.moodle.dao.CourseDAO
 import com.gumi.moodle.model.Course
+import com.gumi.moodle.model.Grade
 import com.gumi.moodle.model.Role.*
 import com.gumi.moodle.withRole
 import io.ktor.application.*
@@ -12,6 +13,7 @@ import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import org.litote.kmongo.*
 
 
 class CourseController
@@ -28,17 +30,37 @@ fun Application.courseRoutes() {
                     call.respond(courses)
                 }
             }
-            withRole(ADMIN, TEACHER) {
+            withRole(ADMIN, TEACHER, STUDENT) {
                 route("/course") {
                     post {
                         val course = call.receive<Course>()
-                        if (dao.getOne(course.name) != null) return@post call.respondText(
+                        if (dao.exists(course)) return@post call.respondText(
                             "Duplicate course name",
                             status = HttpStatusCode.Conflict
                         )
                         dao.add(course)
 
                         call.respond(HttpStatusCode.OK)
+                    }
+                }
+                route("/course/grade/{course_id}/{student_id}") {
+                    post {
+                        val grade = call.receive<Grade>()
+                        val courseID = call.parameters["course_id"] ?: return@post call.respondText(
+                            "Missing or malformed course id",
+                            status = HttpStatusCode.BadRequest
+                        )
+                        val userID = call.parameters["student_id"] ?: return@post call.respondText(
+                            "Missing or malformed user id",
+                            status = HttpStatusCode.BadRequest
+                        )
+                        val updated = dao.updateOne(
+                            courseID,
+                            push(Course::students.keyProjection(userID), grade)
+                        ) { Course::_id eq it }
+
+                        if (updated) call.respond(HttpStatusCode.OK)
+                        else call.respond(HttpStatusCode.NotModified)
                     }
                 }
             }
@@ -49,7 +71,7 @@ fun Application.courseRoutes() {
                             "Missing or malformed id",
                             status = HttpStatusCode.BadRequest
                         )
-                        val courses = dao.getAll().filter { it.students.containsKey(id) }
+                        val courses = dao.getAll(Course::students.keyProjection(id) exists (true))
                         courses.forEach { it.filterStudents(id) }
 
                         call.respond(courses)
@@ -64,7 +86,7 @@ fun Application.courseRoutes() {
                             status = HttpStatusCode.BadRequest
                         )
 
-                        val courses = dao.getAll().filter { id in it.teachers }
+                        val courses = dao.getAll(Course::teachers contains id)
 
                         call.respond(courses)
                     }
@@ -81,7 +103,7 @@ fun Application.courseRoutes() {
                             "Missing or malformed course id",
                             status = HttpStatusCode.BadRequest
                         )
-                        val course = dao.getOne(courseID) { it._id ?: "" } ?: return@get call.respondText(
+                        val course = dao.getOne(courseID) { Course::_id eq it } ?: return@get call.respondText(
                             "No course matches requested course id",
                             status = HttpStatusCode.BadRequest
                         )

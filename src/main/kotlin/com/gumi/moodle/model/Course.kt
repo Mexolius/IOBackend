@@ -8,7 +8,7 @@ data class Course(
     var students: MutableMap<String, List<Grade>> = mutableMapOf(),  //student id ->
     var teachers: List<String>,  //list of teacher ids
     var gradeModel: List<Grade>
-) {
+)  {
     fun filterStudents(id: String) {
         students.keys.retainAll { it == id }
     }
