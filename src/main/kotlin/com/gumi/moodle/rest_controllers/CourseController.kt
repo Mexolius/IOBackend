@@ -71,7 +71,9 @@ fun Application.courseRoutes() {
                             "Missing or malformed id",
                             status = HttpStatusCode.BadRequest
                         )
+
                         val courses = dao.getAll(Course::students.keyProjection(id) exists (true))
+
                         courses.forEach { it.filterStudents(id) }
 
                         call.respond(courses)
