@@ -4,7 +4,11 @@ import org.bson.conversions.Bson
 import org.litote.kmongo.EMPTY_BSON
 import org.litote.kmongo.coroutine.CoroutineCollection
 import org.litote.kmongo.coroutine.coroutine
+import org.litote.kmongo.exists
+import org.litote.kmongo.keyProjection
+import org.litote.kmongo.property.KPropertyPath
 import org.litote.kmongo.reactivestreams.KMongo
+import kotlin.reflect.KProperty1
 
 abstract class AbstractDAO<T : Any, U>(private val defaultQueryCreator: (U) -> Bson) {
 
@@ -40,3 +44,9 @@ abstract class AbstractDAO<T : Any, U>(private val defaultQueryCreator: (U) -> B
     suspend fun drop() =
         getCollection().drop()
 }
+
+infix fun <K, T> KProperty1<out Any, Map<out K, T>?>.atKey(key: K): KPropertyPath<out Any?, T?> =
+    this.keyProjection(key)
+
+infix fun <K, T> KProperty1<out Any, Map<out K, T>?>.containsKey(key: K): Bson =
+    this.keyProjection(key) exists true
