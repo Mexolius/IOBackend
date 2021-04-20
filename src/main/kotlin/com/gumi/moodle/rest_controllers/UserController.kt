@@ -23,7 +23,7 @@ fun Application.userRoutes() {
             withRole(ADMIN) {
                 route("/users") {
                     get {
-                        val users = dao.getAll()
+                        val users: List<User> = dao.getAll()
 
                         call.respond(users)
                     }
@@ -44,6 +44,8 @@ fun Application.userRoutes() {
                             status = HttpStatusCode.BadRequest
                         )
                         val user = dao.getOne(email) ?: return@get call.respond(HttpStatusCode.NotFound)
+                        user.password = ""
+                        user.salt = ""
                         call.respond(user)
                     }
                 }

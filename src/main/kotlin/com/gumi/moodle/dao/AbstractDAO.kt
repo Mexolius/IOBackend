@@ -14,7 +14,7 @@ abstract class AbstractDAO<T : Any, U>(private val defaultQueryCreator: (U) -> B
     protected abstract fun getCollection(): CoroutineCollection<T>
     abstract suspend fun exists(obj: T): Boolean
 
-    suspend fun getAll(query: Bson = EMPTY_BSON): List<T> =
+    open suspend fun getAll(query: Bson = EMPTY_BSON): List<T> =
         getCollection().find(query).toList()
 
     suspend fun add(obj: T): Boolean =
