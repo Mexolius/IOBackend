@@ -53,7 +53,7 @@ fun Application.courseRoutes() {
                     }
                 }
             }
-            withRole(ADMIN, TEACHER, STUDENT) {
+            withRole(ADMIN, TEACHER) {
                 route("/course") {
                     post {
                         val course = call.receive<Course>()
@@ -117,7 +117,7 @@ fun Application.courseRoutes() {
                     }
                 }
             }
-            withRole(ADMIN, STUDENT, TEACHER, idField = ID("user_id")) {
+            withRole(ADMIN, TEACHER, idField = ID("user_id")) {
                 route("/courses/{user_id}/{course_id}") {
                     get {
                         val userID = call.parameters["user_id"] ?: return@get call.respondText(
