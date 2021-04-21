@@ -17,9 +17,16 @@ class UserDAO : AbstractDAO<User, String>({ User::email eq it }) {
     override suspend fun getAll(query: Bson): List<User> =
         getCollection().find(query).projection(exclude(User::password, User::salt)).toList()
 
-//    override suspend fun getOne(
-//        value: String,
-//        queryCreator: (String) -> Bson
-//    ): User? =
-//        getCollection().findOne(queryCreator(value), exclude(User::password, User::salt)
+    suspend fun getOne(
+        value: String,
+        includeCrypto: Boolean,
+        queryCreator: (String) -> Bson = defaultQueryCreator
+    ): User? {
+        val user = getCollection().findOne(queryCreator(value))
+        if(!includeCrypto && user != null){
+            user.salt = ""
+            user.password = ""
+        }
+        return user
+    }
 }

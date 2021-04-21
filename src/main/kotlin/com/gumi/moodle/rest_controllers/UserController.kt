@@ -43,9 +43,8 @@ fun Application.userRoutes() {
                             "Missing or malformed email",
                             status = HttpStatusCode.BadRequest
                         )
-                        val user = dao.getOne(email) ?: return@get call.respond(HttpStatusCode.NotFound)
-                        user.password = ""
-                        user.salt = ""
+                        val user = dao.getOne(email, includeCrypto = false)
+                            ?: return@get call.respond(HttpStatusCode.NotFound)
                         call.respond(user)
                     }
                 }

@@ -6,7 +6,7 @@ import org.litote.kmongo.coroutine.CoroutineCollection
 import org.litote.kmongo.coroutine.coroutine
 import org.litote.kmongo.reactivestreams.KMongo
 
-abstract class AbstractDAO<T : Any, U>(private val defaultQueryCreator: (U) -> Bson) {
+abstract class AbstractDAO<T : Any, U>(protected val defaultQueryCreator: (U) -> Bson) {
 
     private val client = KMongo.createClient("mongodb://localhost:27017").coroutine
     protected val database = client.getDatabase("IOtest")
