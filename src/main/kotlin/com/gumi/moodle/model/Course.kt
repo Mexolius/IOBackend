@@ -5,11 +5,11 @@ data class Course(
     var name: String,
     var description: String,
     var studentLimit: Int = 100,
-    var students: MutableMap<String, List<Grade>> = mutableMapOf(),  //student id ->
-    var teachers: List<String>,  //list of teacher ids
-    var gradeModel: List<Grade>
+    var students: MutableSet<String> = mutableSetOf(),
+    var teachers: List<String>,
+    var gradeModel: GradeNode
 ) {
-    fun filterStudents(id: String) {
-        students.keys.retainAll { it == id }
+    fun filterStudents(id: UserID) {
+        gradeModel.filterStudents(id)
     }
 }

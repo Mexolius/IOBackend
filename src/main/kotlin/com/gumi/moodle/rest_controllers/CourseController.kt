@@ -3,10 +3,8 @@ package com.gumi.moodle.rest_controllers
 import com.gumi.moodle.IDField.ID
 import com.gumi.moodle.UserSession
 import com.gumi.moodle.dao.CourseDAO
-import com.gumi.moodle.dao.atKey
-import com.gumi.moodle.dao.containsKey
 import com.gumi.moodle.model.Course
-import com.gumi.moodle.model.Grade
+import com.gumi.moodle.model.GradeNode
 import com.gumi.moodle.model.Role.*
 import com.gumi.moodle.withRole
 import io.ktor.application.*
@@ -17,8 +15,8 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import org.litote.kmongo.contains
 import org.litote.kmongo.eq
-import org.litote.kmongo.keyProjection
-import org.litote.kmongo.push
+import org.litote.kmongo.set
+import org.litote.kmongo.setTo
 
 
 class CourseController
@@ -36,24 +34,6 @@ fun Application.courseRoutes() {
                 }
             }
             withRole(ADMIN, TEACHER) {
-                route("/course/grade/{course_id}") {
-                    post {
-                        val grade = call.receive<Grade>()
-                        val courseID = call.parameters["course_id"] ?: return@post call.respondText(
-                            "Missing or malformed course id",
-                            status = HttpStatusCode.BadRequest
-                        )
-                        val updated = dao.updateOne(
-                            courseID,
-                            push(Course::gradeModel, grade)
-                        ) { Course::_id eq it }
-
-                        if (updated) call.respond(HttpStatusCode.OK)
-                        else call.respond(HttpStatusCode.NotModified)
-                    }
-                }
-            }
-            withRole(ADMIN, TEACHER) {
                 route("/course") {
                     post {
                         val course = call.receive<Course>()
@@ -66,20 +46,16 @@ fun Application.courseRoutes() {
                         call.respond(HttpStatusCode.OK)
                     }
                 }
-                route("/course/grade/{course_id}/{student_id}") {
+                route("/course/grade/{course_id}") {
                     post {
-                        val grade = call.receive<Grade>()
+                        val grade = call.receive<GradeNode>()
                         val courseID = call.parameters["course_id"] ?: return@post call.respondText(
                             "Missing or malformed course id",
                             status = HttpStatusCode.BadRequest
                         )
-                        val userID = call.parameters["student_id"] ?: return@post call.respondText(
-                            "Missing or malformed user id",
-                            status = HttpStatusCode.BadRequest
-                        )
                         val updated = dao.updateOne(
                             courseID,
-                            push(Course::students atKey userID, grade)
+                            set(Course::gradeModel setTo grade)
                         ) { Course::_id eq it }
 
                         if (updated) call.respond(HttpStatusCode.OK)
@@ -95,7 +71,7 @@ fun Application.courseRoutes() {
                             status = HttpStatusCode.BadRequest
                         )
 
-                        val courses = dao.getAll(Course::students containsKey id)
+                        val courses = dao.getAll(Course::students contains id)
 
                         courses.forEach { it.filterStudents(id) }
 

@@ -4,8 +4,7 @@
   "studentLimit": 100,
   "students": [
     {
-      "id": "id1",
-      "grades": [
+      "id1": [
       ]
     }
   ],
