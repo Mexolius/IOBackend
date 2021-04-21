@@ -23,7 +23,7 @@ fun Application.userRoutes() {
             withRole(ADMIN) {
                 route("/users") {
                     get {
-                        val users = dao.getAll()
+                        val users: List<User> = dao.getAll()
 
                         call.respond(users)
                     }
@@ -43,7 +43,8 @@ fun Application.userRoutes() {
                             "Missing or malformed email",
                             status = HttpStatusCode.BadRequest
                         )
-                        val user = dao.getOne(email) ?: return@get call.respond(HttpStatusCode.NotFound)
+                        val user = dao.getOne(email, includeCrypto = false)
+                            ?: return@get call.respond(HttpStatusCode.NotFound)
                         call.respond(user)
                     }
                 }
