@@ -5,11 +5,7 @@ data class Course(
     var name: String,
     var description: String,
     var studentLimit: Int = 100,
-    var students: MutableSet<String> = mutableSetOf(),
-    var teachers: List<String>,
-    var gradeModel: GradeNode
-) {
-    fun filterStudents(id: UserID) {
-        gradeModel.filterStudents(id)
-    }
-}
+    var students: MutableSet<UserID> = mutableSetOf(),
+    var teachers: MutableSet<UserID> = mutableSetOf(),
+    var gradeModel: MutableSet<Grade> = mutableSetOf(),
+)

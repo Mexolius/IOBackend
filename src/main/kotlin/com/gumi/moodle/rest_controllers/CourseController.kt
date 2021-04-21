@@ -1,11 +1,13 @@
 package com.gumi.moodle.rest_controllers
 
 import com.gumi.moodle.IDField.ID
-import com.gumi.moodle.UserSession
 import com.gumi.moodle.dao.CourseDAO
+import com.gumi.moodle.dao.atKey
 import com.gumi.moodle.model.Course
-import com.gumi.moodle.model.GradeNode
-import com.gumi.moodle.model.Role.*
+import com.gumi.moodle.model.Grade
+import com.gumi.moodle.model.Role.ADMIN
+import com.gumi.moodle.model.Role.TEACHER
+import com.gumi.moodle.model.StudentGrade
 import com.gumi.moodle.withRole
 import io.ktor.application.*
 import io.ktor.auth.*
@@ -13,10 +15,7 @@ import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
-import org.litote.kmongo.contains
-import org.litote.kmongo.eq
-import org.litote.kmongo.set
-import org.litote.kmongo.setTo
+import org.litote.kmongo.*
 
 
 class CourseController
@@ -34,6 +33,24 @@ fun Application.courseRoutes() {
                 }
             }
             withRole(ADMIN, TEACHER) {
+                route("/course/grade/{course_id}") {
+                    post {
+                        val grade = call.receive<Grade>()
+                        val courseID = call.parameters["course_id"] ?: return@post call.respondText(
+                            "Missing or malformed course id",
+                            status = HttpStatusCode.BadRequest
+                        )
+                        val updated = dao.updateOne(
+                            courseID,
+                            push(Course::gradeModel, grade)
+                        ) { Course::_id eq it }
+
+                        if (updated) call.respond(HttpStatusCode.OK)
+                        else call.respond(HttpStatusCode.NotModified)
+                    }
+                }
+            }
+            withRole(ADMIN, TEACHER) {
                 route("/course") {
                     post {
                         val course = call.receive<Course>()
@@ -46,17 +63,21 @@ fun Application.courseRoutes() {
                         call.respond(HttpStatusCode.OK)
                     }
                 }
-                route("/course/grade/{course_id}") {
+                route("/course/grade/{course_id}/{student_id}") {
                     post {
-                        val grade = call.receive<GradeNode>()
+                        val grade = call.receive<StudentGrade>()
                         val courseID = call.parameters["course_id"] ?: return@post call.respondText(
                             "Missing or malformed course id",
                             status = HttpStatusCode.BadRequest
                         )
+                        val userID = call.parameters["student_id"] ?: return@post call.respondText(
+                            "Missing or malformed user id",
+                            status = HttpStatusCode.BadRequest
+                        )
                         val updated = dao.updateOne(
                             courseID,
-                            set(Course::gradeModel setTo grade)
-                        ) { Course::_id eq it }
+                            set(Course::gradeModel / Grade::studentPoints atKey userID setTo grade.points)
+                        ) { and(Course::_id eq it, Course::gradeModel / Grade::_id eq grade.gradeID) }
 
                         if (updated) call.respond(HttpStatusCode.OK)
                         else call.respond(HttpStatusCode.NotModified)
@@ -73,7 +94,7 @@ fun Application.courseRoutes() {
 
                         val courses = dao.getAll(Course::students contains id)
 
-                        courses.forEach { it.filterStudents(id) }
+                        //courses.forEach { it.filterStudents(id) }
 
                         call.respond(courses)
                     }
@@ -109,7 +130,7 @@ fun Application.courseRoutes() {
                             status = HttpStatusCode.BadRequest
                         )
 
-                        if (STUDENT in (call.principal<Principal>() as UserSession).roles) course.filterStudents(userID)
+                        //if (STUDENT in (call.principal<Principal>() as UserSession).roles) course.filterStudents(userID)
                         call.respond(course)
                     }
                 }
