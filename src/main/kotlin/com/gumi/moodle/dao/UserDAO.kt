@@ -21,12 +21,11 @@ class UserDAO : AbstractDAO<User, String>({ User::email eq it }) {
         value: String,
         includeCrypto: Boolean,
         queryCreator: (String) -> Bson = defaultQueryCreator
-    ): User? {
-        val user = getCollection().findOne(queryCreator(value))
-        if(!includeCrypto && user != null){
-            user.salt = ""
-            user.password = ""
-        }
-        return user
-    }
+    ): User? =
+        if (includeCrypto)
+            getCollection().findOne(queryCreator(value))
+        else
+            getCollection().find(queryCreator(value))
+                .projection(exclude(User::password, User::salt))
+                .first()
 }
