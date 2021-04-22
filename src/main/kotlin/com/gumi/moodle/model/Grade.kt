@@ -17,7 +17,7 @@ data class Grade(
     val name: String,
     val level: Int,
     val maxPoints: Int = 0,
-    val studentPoints: MutableMap<UserID, Int> = mutableMapOf(),
     val thresholds: MutableSet<Float> = mutableSetOf(),
+    val studentPoints: MutableMap<UserID, Int> = mutableMapOf(),
     val parentID: GradeID? = null,
 )

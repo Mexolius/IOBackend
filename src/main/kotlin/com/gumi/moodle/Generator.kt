@@ -51,8 +51,8 @@ class Generator {
             "course$number",
             "example description",
             100,
-            studentsSublist.map { it._id }.toMutableSet(),
-            teachersSublist.map { it._id }.toMutableSet(),
+            studentsSublist.map { it._id!! }.toMutableSet(),
+            teachersSublist.map { it._id!! }.toMutableSet(),
             mutableSetOf(Grade("grade1", "grade1", 0, Random.nextInt(100)))
         )
     }

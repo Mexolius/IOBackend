@@ -1,13 +1,11 @@
 package com.gumi.moodle.rest_controllers
 
 import com.gumi.moodle.IDField.ID
+import com.gumi.moodle.UserSession
 import com.gumi.moodle.dao.CourseDAO
 import com.gumi.moodle.dao.atKey
 import com.gumi.moodle.dao.withGradeID
-import com.gumi.moodle.model.Course
-import com.gumi.moodle.model.Grade
-import com.gumi.moodle.model.GradeStudent
-import com.gumi.moodle.model.GradeThresholds
+import com.gumi.moodle.model.*
 import com.gumi.moodle.model.Role.ADMIN
 import com.gumi.moodle.model.Role.TEACHER
 import com.gumi.moodle.withRole
@@ -74,6 +72,7 @@ fun Application.courseRoutes() {
                             courseID,
                             set(Course::gradeModel.posOp / Grade::thresholds setTo grade.thresholds)
                         ) { Course::_id eq it withGradeID grade.gradeID }
+
                         if (updated) call.respond(HttpStatusCode.OK)
                         else call.respond(HttpStatusCode.NotModified)
                     }
@@ -107,9 +106,7 @@ fun Application.courseRoutes() {
                             status = HttpStatusCode.BadRequest
                         )
 
-                        val courses = dao.getAll(Course::students contains id)
-
-                        //courses.forEach { it.filterStudents(id) }
+                        val courses = dao.getAll(Course::students contains id, id)
 
                         call.respond(courses)
                     }
@@ -140,12 +137,17 @@ fun Application.courseRoutes() {
                             "Missing or malformed course id",
                             status = HttpStatusCode.BadRequest
                         )
-                        val course = dao.getOne(courseID) { Course::_id eq it } ?: return@get call.respondText(
+                        var course =
+                            if (Role.STUDENT in (call.principal<Principal>() as UserSession).roles)
+                                dao.getOne(courseID, userID) { Course::_id eq it }
+                            else
+                                dao.getOne(courseID) { Course::_id eq it }
+
+                        course = course ?: return@get call.respondText(
                             "No course matches requested course id",
                             status = HttpStatusCode.BadRequest
                         )
 
-                        //if (STUDENT in (call.principal<Principal>() as UserSession).roles) course.filterStudents(userID)
                         call.respond(course)
                     }
                 }
