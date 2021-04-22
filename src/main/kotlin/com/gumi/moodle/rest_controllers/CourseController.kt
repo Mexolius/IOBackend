@@ -3,11 +3,13 @@ package com.gumi.moodle.rest_controllers
 import com.gumi.moodle.IDField.ID
 import com.gumi.moodle.dao.CourseDAO
 import com.gumi.moodle.dao.atKey
+import com.gumi.moodle.dao.withGradeID
 import com.gumi.moodle.model.Course
 import com.gumi.moodle.model.Grade
+import com.gumi.moodle.model.GradeStudent
+import com.gumi.moodle.model.GradeThresholds
 import com.gumi.moodle.model.Role.ADMIN
 import com.gumi.moodle.model.Role.TEACHER
-import com.gumi.moodle.model.StudentGrade
 import com.gumi.moodle.withRole
 import io.ktor.application.*
 import io.ktor.auth.*
@@ -33,6 +35,18 @@ fun Application.courseRoutes() {
                 }
             }
             withRole(ADMIN, TEACHER) {
+                route("/course") {
+                    post {
+                        val course = call.receive<Course>()
+                        if (dao.exists(course)) return@post call.respondText(
+                            "Duplicate course name",
+                            status = HttpStatusCode.Conflict
+                        )
+                        dao.add(course)
+
+                        call.respond(HttpStatusCode.OK)
+                    }
+                }
                 route("/course/grade/{course_id}") {
                     post {
                         val grade = call.receive<Grade>()
@@ -49,23 +63,24 @@ fun Application.courseRoutes() {
                         else call.respond(HttpStatusCode.NotModified)
                     }
                 }
-            }
-            withRole(ADMIN, TEACHER) {
-                route("/course") {
+                route("/course/grade/thresholds/{course_id}") {
                     post {
-                        val course = call.receive<Course>()
-                        if (dao.exists(course)) return@post call.respondText(
-                            "Duplicate course name",
-                            status = HttpStatusCode.Conflict
+                        val grade = call.receive<GradeThresholds>()
+                        val courseID = call.parameters["course_id"] ?: return@post call.respondText(
+                            "Missing or malformed course id",
+                            status = HttpStatusCode.BadRequest
                         )
-                        dao.add(course)
-
-                        call.respond(HttpStatusCode.OK)
+                        val updated = dao.updateOne(
+                            courseID,
+                            set(Course::gradeModel.posOp / Grade::thresholds setTo grade.thresholds)
+                        ) { Course::_id eq it withGradeID grade.gradeID }
+                        if (updated) call.respond(HttpStatusCode.OK)
+                        else call.respond(HttpStatusCode.NotModified)
                     }
                 }
                 route("/course/grade/{course_id}/{student_id}") {
                     post {
-                        val grade = call.receive<StudentGrade>()
+                        val grade = call.receive<GradeStudent>()
                         val courseID = call.parameters["course_id"] ?: return@post call.respondText(
                             "Missing or malformed course id",
                             status = HttpStatusCode.BadRequest
@@ -76,8 +91,8 @@ fun Application.courseRoutes() {
                         )
                         val updated = dao.updateOne(
                             courseID,
-                            set(Course::gradeModel / Grade::studentPoints atKey userID setTo grade.points)
-                        ) { and(Course::_id eq it, Course::gradeModel / Grade::_id eq grade.gradeID) }
+                            set(Course::gradeModel.posOp / Grade::studentPoints atKey userID setTo grade.points)
+                        ) { Course::_id eq it withGradeID grade.gradeID }
 
                         if (updated) call.respond(HttpStatusCode.OK)
                         else call.respond(HttpStatusCode.NotModified)
@@ -138,5 +153,6 @@ fun Application.courseRoutes() {
         }
     }
 }
+
 
 

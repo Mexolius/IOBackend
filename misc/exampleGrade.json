@@ -1,0 +1,9 @@
+{
+  "_id": "id1",
+  "name": "kolos1",
+  "level": 0,
+  "maxPoints": 60,
+  "studentPoints": {},
+  "thresholds": [],
+  "parentID": null
+}

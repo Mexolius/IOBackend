@@ -1,44 +1,38 @@
 [
   {
+    "_id": "id1",
     "name": "kolos1",
-    "points": 60,
-    "children": [
-      {
-        "name": "zad1",
-        "points": 60,
-        "children": [
-          {
-            "name": "p1",
-            "points": 60
-          },
-          {
-            "name": "p1",
-            "points": 40
-          }
-        ]
-      },
-      {
-        "name": "zad2",
-        "points": 40
-      }
-    ]
+    "level": 0,
+    "maxPoints": 60,
+    "studentPoints": {},
+    "thresholds": [],
+    "parentID": null
   },
   {
-    "name": "kolos2",
-    "points": 40,
-    "children": [
-      {
-        "name": "zad1",
-        "points": 60
-      },
-      {
-        "name": "zad2",
-        "points": 40
-      }
-    ]
+    "_id": "id2",
+    "name": "zad1",
+    "level": 1,
+    "maxPoints": 60,
+    "studentPoints": {},
+    "thresholds": [],
+    "parentID": "id1"
   },
   {
-    "name": "zadanie",
-    "points": 20
+    "_id": "id3",
+    "name": "p1",
+    "level": 2,
+    "maxPoints": 60,
+    "studentPoints": {},
+    "thresholds": [],
+    "parentID": "id2"
+  },
+  {
+    "_id": "id3",
+    "name": "p1",
+    "level": 2,
+    "maxPoints": 60,
+    "studentPoints": {},
+    "thresholds": [],
+    "parentID": "id2"
   }
 ]

@@ -4,8 +4,8 @@
   "email": "aa@aa.aa",
   "password": "sth encrypted",
   "roles": [
-    "admin",
-    "student",
-    "lecturer"
+    "ADMIN",
+    "STUDENT",
+    "TEACHER"
   ]
 }
