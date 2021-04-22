@@ -1,7 +1,9 @@
 package com.gumi.moodle.model
 
+typealias CourseID = String
+
 data class Course(
-    var _id: String?,
+    var _id: CourseID?,
     var name: String,
     var description: String,
     var studentLimit: Int = 100,

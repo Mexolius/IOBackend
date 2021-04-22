@@ -4,10 +4,10 @@ import com.gumi.moodle.model.Course
 import com.gumi.moodle.model.Grade
 import com.gumi.moodle.model.GradeID
 import org.bson.conversions.Bson
-import org.litote.kmongo.*
+import org.litote.kmongo.and
 import org.litote.kmongo.coroutine.CoroutineCollection
-import kotlin.reflect.KProperty
-import kotlin.reflect.KProperty1
+import org.litote.kmongo.div
+import org.litote.kmongo.eq
 
 class CourseDAO : AbstractDAO<Course, String>({ Course::name eq it }) {
 

@@ -3,10 +3,10 @@ package com.gumi.moodle.model
 import io.ktor.util.*
 import java.security.SecureRandom
 
-typealias UserID = String?
+typealias UserID = String
 
 data class User(
-    var _id: UserID,
+    var _id: UserID?,
     var firstName: String,
     var lastName: String,
     var email: String,
