@@ -3,7 +3,13 @@
   "name": "kolos1",
   "level": 0,
   "maxPoints": 60,
-  "studentPoints": {},
-  "thresholds": [],
+  "studentPoints": {
+    "student_id": 30
+  },
+  "thresholds": [
+    0.1,
+    0.7,
+    1.0
+  ],
   "parentID": null
 }

@@ -1,17 +1,31 @@
 {
+  "_id": null,
   "name": "course1",
   "description": "an example course",
   "studentLimit": 100,
   "students": [
-    {
-      "id1": [
-      ]
-    }
+    "student_id1",
+    "student_id2"
   ],
-  "lecturers": [
-    "id1",
-    "id2"
+  "teachers": [
+    "teacher_id1",
+    "teacher_id2"
   ],
   "gradeModel": [
+    {
+      "_id": "id1",
+      "name": "kolos1",
+      "level": 0,
+      "maxPoints": 60,
+      "studentPoints": {
+        "student_id1": 30
+      },
+      "thresholds": [
+        0.1,
+        0.7,
+        1.0
+      ],
+      "parentID": null
+    }
   ]
 }
