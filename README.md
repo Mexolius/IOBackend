@@ -18,7 +18,7 @@ Short description of all REST API endpoints. Order is the same as in code.
 | `/api/courses`                               | get  | any authenticated                  | returns all courses                   | ---                                                  |
 | `/api/course`                                | post | admin, teacher                     | adds course                           | [course](/misc/exampleCourse.json)                   |
 | `/api/course/grade/{course_id}`              | post | admin, teacher                     | updates grade model                   | [grade](/misc/exampleGrade.json)                     |
-| `/course/grade/thresholds/{course_id}`       | post | admin, teacher                     | updates grade thresholds              | [grade thresholds](/misc/exampleGradeThresholds.json)|
+| `/api/course/grade/thresholds/{course_id}`   | post | admin, teacher                     | updates grade thresholds              | [grade thresholds](/misc/exampleGradeThresholds.json)|
 | `/api/course/grade/{course_id}/{student_id}` | post | admin, teacher                     | updates student's grade               | [student's grade](/misc/exampleGradeStudent.json)    |
 | `/api/courses/of-student/{id}`               | get  | admin, teacher, matched by id      | returns courses of a student          | ---                                                  |
 | `/api/courses/of-teacher/{id}`               | get  | admin, teacher, matched by id      | returns courses of a teacher          | ---                                                  |
