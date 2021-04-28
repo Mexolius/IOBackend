@@ -3,16 +3,17 @@ package com.gumi.moodle.model
 import io.ktor.util.*
 import java.security.SecureRandom
 
+typealias UserID = String
 
-class User(
-    var _id: String?,
+data class User(
+    var _id: UserID?,
     var firstName: String,
     var lastName: String,
     var email: String,
     var password: String = "",
     var salt: String = "",
     var roles: Set<Role> = setOf(Role.STUDENT),
-)  {
+) {
     private val digestFunction = getDigestFunction("SHA-256") { salt }
 
     fun hashPassword(plaintext: String) {
@@ -33,16 +34,6 @@ class User(
         return "$firstName $lastName  email: $email roles: $roles"
     }
 
-    override fun equals(other: Any?): Boolean { //this equals is for finding if user already exists in db, if there is a need to use traditional comparison please feel free to make this a separate method and swap it
-        if (this === other) return true
-        if (other !is User) return false
-        return email == other.email
-    }
-
-    override fun hashCode(): Int {
-        return email.hashCode()
-    }
-
     companion object {
         fun createUserWithPlaintextInput(
             firstName: String,
@@ -51,7 +42,7 @@ class User(
             password: String,
             roles: Set<Role> = setOf(Role.STUDENT),
         ): User {
-            return User(null, firstName, lastName, email, "", "", roles).apply { hashPassword(password) }
+            return User(_id = null, firstName, lastName, email, roles = roles).apply { hashPassword(password) }
         }
 
         fun createUserWithPlaintextInput(

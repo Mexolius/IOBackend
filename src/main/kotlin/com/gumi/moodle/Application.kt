@@ -1,7 +1,7 @@
 package com.gumi.moodle
 
-import com.gumi.moodle.dao.UserDAO
 import com.gumi.moodle.rest_controllers.courseRoutes
+import com.gumi.moodle.rest_controllers.gradeRoutes
 import com.gumi.moodle.rest_controllers.userRoutes
 import io.ktor.application.*
 import io.ktor.auth.*
@@ -34,7 +34,7 @@ fun Application.module(testing: Boolean = false) {
     install(Authentication) {
         basic(name = "basicAuth") {
             realm = "Ktor Server"
-            validate { credentials -> validateUser(credentials) }
+            validate { validateUser(it) }
         }
     }
 
@@ -81,14 +81,6 @@ fun Application.module(testing: Boolean = false) {
         }
         userRoutes()
         courseRoutes()
+        gradeRoutes()
     }
-}
-
-suspend fun validateUser(credentials: UserPasswordCredential): UserSession? {
-    val user = UserDAO().getOne(credentials.name)
-    return if (user != null && user.checkPassword(credentials.password)) UserSession(
-        credentials.name,
-        user._id!!,
-        user.roles
-    ) else null
 }
