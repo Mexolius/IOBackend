@@ -1,8 +1,8 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-val ktor_version: String by project
-val kotlin_version: String by project
-val logback_version: String by project
+val ktorVersion: String by project
+val kotlinVersion: String by project
+val logbackVersion: String by project
 
 plugins {
     application
@@ -24,11 +24,36 @@ repositories {
 }
 
 dependencies {
-    implementation("io.ktor:ktor-server-core:$ktor_version")
-    implementation("io.ktor:ktor-server-netty:$ktor_version")
-    implementation("io.ktor:ktor-jackson:$ktor_version")
-    implementation("io.ktor:ktor-auth:$ktor_version")
-    implementation("ch.qos.logback:logback-classic:$logback_version")
+    implementation("io.ktor:ktor-server-core:$ktorVersion")
+    implementation("io.ktor:ktor-server-netty:$ktorVersion")
+    implementation("io.ktor:ktor-jackson:$ktorVersion")
+    implementation("io.ktor:ktor-auth:$ktorVersion")
+    implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("org.litote.kmongo:kmongo-coroutine:4.2.5")
-    testImplementation("io.ktor:ktor-server-tests:$ktor_version")
+    testImplementation("io.ktor:ktor-server-tests:$ktorVersion")
+}
+
+tasks.register<Jar>("fatJar") {
+    archiveClassifier.set("fat")
+    destinationDirectory.set(file("$rootDir/build/distributions"))
+
+    group = "distribution"
+
+    from(sourceSets.main.get().output)
+
+    manifest{
+        attributes(
+            "Main-Class" to application.mainClass,
+            "Implementation-Version" to archiveVersion
+        )
+    }
+
+    dependsOn(configurations.runtimeClasspath, "check", "test")
+    from({
+        configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) }
+    })
+}
+
+tasks.assembleDist{
+    dependsOn("fatJar")
 }
