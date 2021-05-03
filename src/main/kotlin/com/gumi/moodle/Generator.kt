@@ -53,8 +53,25 @@ class Generator {
             100,
             studentsSublist.map { it._id!! }.toMutableSet(),
             teachersSublist.map { it._id!! }.toMutableSet(),
-            mutableSetOf(Grade("grade1", "grade1", 0, Random.nextInt(100)))
+            newGradingModel(studentsSublist)
         )
+    }
+
+    private fun newGradingModel(students: List<User>): MutableSet<Grade> {
+        val gradingModel = (1..5)
+            .map { newGrade(it) }
+            .toMutableSet()
+        gradingModel.forEach { assignGrades(it, students) }
+        return gradingModel
+    }
+
+    private fun assignGrades(grade: Grade, students: List<User>) {
+        students.filter { Random.nextBoolean() }
+            .forEach { grade.studentPoints[it._id!!] = Random.nextInt(grade.maxPoints) }
+    }
+
+    private fun newGrade(number: Int): Grade {
+        return Grade("grade$number", "grade$number", 0, Random.nextInt(1, 100))
     }
 
     private fun <T> getRandomElement(list: List<T>): T {
