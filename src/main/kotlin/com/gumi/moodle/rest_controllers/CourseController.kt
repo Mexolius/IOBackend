@@ -1,15 +1,12 @@
 package com.gumi.moodle.rest_controllers
 
+import com.gumi.moodle.*
 import com.gumi.moodle.IDField.ID
-import com.gumi.moodle.MalformedRouteException
-import com.gumi.moodle.UserSession
 import com.gumi.moodle.dao.CourseDAO
-import com.gumi.moodle.getParameters
 import com.gumi.moodle.model.Course
 import com.gumi.moodle.model.Role
 import com.gumi.moodle.model.Role.ADMIN
 import com.gumi.moodle.model.Role.TEACHER
-import com.gumi.moodle.withRole
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.http.*
@@ -49,9 +46,9 @@ fun Application.courseRoutes() {
                 }
             }
             withRole(ADMIN, idField = ID()) {
-                route("/courses/of-student/{id}") {
+                route("/courses/of-student/{$user_id}") {
                     get {
-                        val id = call.parameters["id"] ?: return@get call.respondText(
+                        val id = call.parameters[user_id] ?: return@get call.respondText(
                             "Missing or malformed id",
                             status = HttpStatusCode.BadRequest
                         )
@@ -63,9 +60,9 @@ fun Application.courseRoutes() {
                 }
             }
             withRole(ADMIN, TEACHER, idField = ID()) {
-                route("/courses/of-teacher/{id}") {
+                route("/courses/of-teacher/{$user_id}") {
                     get {
-                        val id = call.parameters["id"] ?: return@get call.respondText(
+                        val id = call.parameters[user_id] ?: return@get call.respondText(
                             "Missing or malformed id",
                             status = HttpStatusCode.BadRequest
                         )
@@ -76,11 +73,11 @@ fun Application.courseRoutes() {
                     }
                 }
             }
-            withRole(ADMIN, TEACHER, idField = ID("user_id")) {
-                route("/courses/{user_id}/{course_id}") {
+            withRole(ADMIN, TEACHER, idField = ID(user_id)) {
+                route("/courses/{$user_id}/{$course_id}") {
                     get {
                         try {
-                            val (userID, courseID) = call.getParameters("user_id", "course_id")
+                            val (userID, courseID) = call.getParameters(user_id, course_id)
                             var course =
                                 if (Role.STUDENT in (call.principal<Principal>() as UserSession).roles)
                                     dao.getOne(courseID, studentID = userID) { Course::_id eq it }

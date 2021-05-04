@@ -1,5 +1,7 @@
 package com.gumi.moodle.dao
 
+import com.gumi.moodle.MONGO_DB_NAME
+import com.gumi.moodle.MONGO_URI
 import org.bson.conversions.Bson
 import org.litote.kmongo.EMPTY_BSON
 import org.litote.kmongo.coroutine.CoroutineCollection
@@ -12,8 +14,8 @@ import kotlin.reflect.KProperty1
 
 abstract class AbstractDAO<T : Any, U>(protected val defaultQueryCreator: (U) -> Bson) {
 
-    private val client = KMongo.createClient("mongodb://localhost:27017").coroutine
-    protected val database = client.getDatabase("IOtest")
+    private val client = KMongo.createClient(MONGO_URI).coroutine
+    protected val database = client.getDatabase(MONGO_DB_NAME)
 
     protected abstract fun getCollection(): CoroutineCollection<T>
     abstract suspend fun exists(obj: T): Boolean
