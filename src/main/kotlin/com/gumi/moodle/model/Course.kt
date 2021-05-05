@@ -1,15 +1,13 @@
 package com.gumi.moodle.model
 
+typealias CourseID = String
+
 data class Course(
-    var _id: String?,
+    var _id: CourseID?,
     var name: String,
     var description: String,
     var studentLimit: Int = 100,
-    var students: MutableMap<String, List<Grade>> = mutableMapOf(),  //student id ->
-    var teachers: List<String>,  //list of teacher ids
-    var gradeModel: List<Grade>
-) {
-    fun filterStudents(id: String) {
-        students.keys.retainAll { it == id }
-    }
-}
+    var students: MutableSet<UserID> = mutableSetOf(),
+    var teachers: MutableSet<UserID> = mutableSetOf(),
+    var gradeModel: MutableSet<Grade> = mutableSetOf(),
+)
