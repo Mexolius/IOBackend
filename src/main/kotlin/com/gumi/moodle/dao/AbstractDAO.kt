@@ -3,13 +3,12 @@ package com.gumi.moodle.dao
 import com.gumi.moodle.MONGO_DB_NAME
 import com.gumi.moodle.MONGO_URI
 import org.bson.conversions.Bson
-import org.litote.kmongo.EMPTY_BSON
+import org.litote.kmongo.*
 import org.litote.kmongo.coroutine.CoroutineCollection
 import org.litote.kmongo.coroutine.coroutine
-import org.litote.kmongo.exists
-import org.litote.kmongo.keyProjection
 import org.litote.kmongo.property.KPropertyPath
 import org.litote.kmongo.reactivestreams.KMongo
+import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty1
 
 abstract class AbstractDAO<T : Any, U>(protected val defaultQueryCreator: (U) -> Bson) {
@@ -52,3 +51,6 @@ infix fun <K, T> KProperty1<out Any?, Map<out K, T>?>.atKey(key: K): KPropertyPa
 
 infix fun <K, T> KProperty1<out Any?, Map<out K, T>?>.containsKey(key: K): Bson =
     this.keyProjection(key) exists true
+
+infix fun <T> KProperty<T>.setTo(value: T): Bson =
+    set(SetTo(this, value))

@@ -52,3 +52,5 @@ data class User(
         }
     }
 }
+
+enum class Role { ADMIN, STUDENT, TEACHER }

@@ -11,8 +11,8 @@ import io.ktor.util.pipeline.*
 data class UserSession(val email: String, val id: String, val roles: Set<Role> = emptySet()) : Principal
 sealed class IDField(val name: String, val getter: (UserSession) -> String) {
     class NONE : IDField("none", { "none" })
-    class EMAIL(name: String = "email") : IDField(name, UserSession::email)
-    class ID(name: String = "id") : IDField(name, UserSession::id)
+    class EMAIL(name: String = email) : IDField(name, UserSession::email)
+    class ID(name: String = user_id) : IDField(name, UserSession::id)
 }
 
 class AuthorizationException(override val message: String) : Exception(message)
