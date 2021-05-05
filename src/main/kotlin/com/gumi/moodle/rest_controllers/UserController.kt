@@ -2,6 +2,7 @@ package com.gumi.moodle.rest_controllers
 
 import com.gumi.moodle.IDField.EMAIL
 import com.gumi.moodle.dao.UserDAO
+import com.gumi.moodle.email
 import com.gumi.moodle.model.Role.ADMIN
 import com.gumi.moodle.model.User
 import com.gumi.moodle.withRole
@@ -37,9 +38,9 @@ fun Application.userRoutes() {
                 }
             }
             withRole(ADMIN, idField = EMAIL()) {
-                route("/user/{email}") {
+                route("/user/{$email}") {
                     get {
-                        val email = call.parameters["email"] ?: return@get call.respondText(
+                        val email = call.parameters[email] ?: return@get call.respondText(
                             "Missing or malformed email",
                             status = HttpStatusCode.BadRequest
                         )

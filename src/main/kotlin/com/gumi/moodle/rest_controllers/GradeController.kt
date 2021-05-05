@@ -1,15 +1,13 @@
 package com.gumi.moodle.rest_controllers
 
-import com.gumi.moodle.MalformedRouteException
+import com.gumi.moodle.*
 import com.gumi.moodle.dao.CourseDAO
 import com.gumi.moodle.dao.atKey
 import com.gumi.moodle.dao.withGradeID
-import com.gumi.moodle.getParameters
 import com.gumi.moodle.model.Course
 import com.gumi.moodle.model.Grade
 import com.gumi.moodle.model.Role.ADMIN
 import com.gumi.moodle.model.Role.TEACHER
-import com.gumi.moodle.withRole
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.http.*
@@ -27,47 +25,46 @@ fun Application.gradeRoutes() {
     routing {
         authenticate("basicAuth") {
             withRole(ADMIN, TEACHER) {
-                route("/grade/{course_id}") {
+                route("/grade/{$course_id}") {
                     post {
                         val grade = call.receive<Grade>()
-                        val courseID = call.parameters["course_id"] ?: return@post call.respondText(
+                        val courseID = call.parameters[course_id] ?: return@post call.respondText(
                             "Missing or malformed course id",
                             status = HttpStatusCode.BadRequest
                         )
                         val updated = dao.updateOne(
                             courseID,
-                            push(Course::gradeModel, grade)
+                            push(Course::grades, grade)
                         ) { Course::_id eq it }
 
                         if (updated) call.respond(HttpStatusCode.OK)
                         else call.respond(HttpStatusCode.NotModified)
                     }
                 }
-                route("/grades/{course_id}") {
+                route("/grades/{$course_id}") {
                     post {
-                        val grades = call.receive<List<Grade>>()
-                        val courseID = call.parameters["course_id"] ?: return@post call.respondText(
+                        val grades = call.receive<MutableSet<Grade>>()
+                        val courseID = call.parameters[course_id] ?: return@post call.respondText(
                             "Missing or malformed course id",
                             status = HttpStatusCode.BadRequest
                         )
                         val updated = dao.updateOne(
                             courseID,
-                            setValue(Course::gradeModel, grades)
-
+                            setValue(Course::grades, grades)
                         ) { Course::_id eq it }
 
                         if (updated) call.respond(HttpStatusCode.OK)
                         else call.respond(HttpStatusCode.NotModified)
                     }
                 }
-                route("/grade/{course_id}/{grade_id}") {
+                route("/grade/{$course_id}/{$grade_id}") {
                     post {
                         try {
                             val grade = call.receive<Grade>()
-                            val (courseID, gradeID) = call.getParameters("course_id", "grade_id")
+                            val (courseID, gradeID) = call.getParameters(course_id, grade_id)
                             val updated = dao.updateOne(
                                 courseID,
-                                set(Course::gradeModel.posOp setTo grade)
+                                set(Course::grades.posOp setTo grade)
                             ) { Course::_id eq it withGradeID gradeID }
 
                             if (updated) call.respond(HttpStatusCode.OK)
@@ -79,10 +76,10 @@ fun Application.gradeRoutes() {
                     }
                     delete {
                         try {
-                            val (courseID, gradeID) = call.getParameters("course_id", "grade_id")
+                            val (courseID, gradeID) = call.getParameters(course_id, grade_id)
                             val updated = dao.updateOne(
                                 courseID,
-                                pullByFilter(Course::gradeModel, Grade::_id eq gradeID)
+                                pullByFilter(Course::grades, Grade::_id eq gradeID)
                             ) { Course::_id eq it }
 
                             if (updated) call.respond(HttpStatusCode.OK)
@@ -93,18 +90,15 @@ fun Application.gradeRoutes() {
                         }
                     }
                 }
-                route("/grade/{course_id}/{grade_id}/{student_id}") {
+                route("/grade/{$course_id}/{$grade_id}/{$user_id}") {
                     post {
                         try {
                             val grade = call.receive<Int>()
-                            val (courseID, gradeID, studentID) = call.getParameters(
-                                "course_id",
-                                "grade_id",
-                                "student_id"
-                            )
+                            val (courseID, gradeID, studentID) =
+                                call.getParameters(course_id, grade_id, user_id)
                             val updated = dao.updateOne(
                                 courseID,
-                                set(Course::gradeModel.posOp / Grade::studentPoints atKey studentID setTo grade)
+                                set(Course::grades.posOp / Grade::studentPoints atKey studentID setTo grade)
                             ) { Course::_id eq it withGradeID gradeID }
 
                             if (updated) call.respond(HttpStatusCode.OK)
