@@ -12,3 +12,5 @@ data class Grade(
     val studentPoints: MutableMap<UserID, Int> = mutableMapOf(),
     val parentID: GradeID? = null,
 )
+
+enum class Aggregation { SUM, MEAN, MEDIAN }

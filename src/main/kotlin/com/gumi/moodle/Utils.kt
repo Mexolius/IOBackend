@@ -3,12 +3,27 @@ package com.gumi.moodle
 import com.gumi.moodle.dao.UserDAO
 import io.ktor.application.*
 import io.ktor.auth.*
+import io.ktor.http.*
+import io.ktor.response.*
+import io.ktor.util.pipeline.*
 
 
 class MalformedRouteException(val msg: String) : Exception()
 
 fun ApplicationCall.getParameters(vararg names: String): List<String> =
     names.map { this.parameters[it] ?: throw MalformedRouteException("Missing or malformed $it") }
+
+@ContextDsl
+suspend fun PipelineContext<Unit, ApplicationCall>.parameters(
+    vararg names: String,
+    body: suspend (List<String>) -> Unit
+) {
+    try {
+        body(call.getParameters(*names))
+    } catch (e: MalformedRouteException) {
+        return call.respondText(e.msg, status = HttpStatusCode.BadRequest)
+    }
+}
 
 suspend fun validateUser(credentials: UserPasswordCredential): UserSession? {
     val user = UserDAO().getOne(credentials.name)

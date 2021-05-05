@@ -5,6 +5,7 @@ import com.gumi.moodle.dao.UserDAO
 import com.gumi.moodle.email
 import com.gumi.moodle.model.Role.ADMIN
 import com.gumi.moodle.model.User
+import com.gumi.moodle.parameters
 import com.gumi.moodle.withRole
 import io.ktor.application.*
 import io.ktor.auth.*
@@ -40,13 +41,11 @@ fun Application.userRoutes() {
             withRole(ADMIN, idField = EMAIL()) {
                 route("/user/{$email}") {
                     get {
-                        val email = call.parameters[email] ?: return@get call.respondText(
-                            "Missing or malformed email",
-                            status = HttpStatusCode.BadRequest
-                        )
-                        val user = dao.getOne(email, includeCrypto = false)
-                            ?: return@get call.respond(HttpStatusCode.NotFound)
-                        call.respond(user)
+                        parameters(email) { (email) ->
+                            val user = dao.getOne(email, includeCrypto = false)
+                                ?: return@parameters call.respond(HttpStatusCode.NotFound)
+                            call.respond(user)
+                        }
                     }
                 }
             }
