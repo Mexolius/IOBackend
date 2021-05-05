@@ -73,7 +73,7 @@ fun Application.courseRoutes() {
                     }
                 }
             }
-            withRole(ADMIN, TEACHER, idField = ID(user_id)) {
+            withRole(ADMIN, TEACHER, idField = ID()) {
                 route("/courses/{$user_id}/{$course_id}") {
                     get {
                         try {

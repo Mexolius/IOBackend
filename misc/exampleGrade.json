@@ -3,6 +3,7 @@
   "name": "kolos1",
   "level": 0,
   "maxPoints": 60,
+  "aggregation": "SUM",
   "studentPoints": {
     "student_id": 30
   },
