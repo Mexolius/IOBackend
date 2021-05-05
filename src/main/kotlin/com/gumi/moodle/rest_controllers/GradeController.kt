@@ -41,6 +41,23 @@ fun Application.gradeRoutes() {
                         else call.respond(HttpStatusCode.NotModified)
                     }
                 }
+                route("/grades/{$course_id}") {
+                    post {
+                        val grades = call.receive<List<Grade>>()
+                        val courseID = call.parameters[course_id] ?: return@post call.respondText(
+                            "Missing or malformed course id",
+                            status = HttpStatusCode.BadRequest
+                        )
+                        val updated = dao.updateOne(
+                            courseID,
+                            setValue(Course::grades, grades)
+
+                        ) { Course::_id eq it }
+
+                        if (updated) call.respond(HttpStatusCode.OK)
+                        else call.respond(HttpStatusCode.NotModified)
+                    }
+                }
                 route("/grade/{$course_id}/{$grade_id}") {
                     post {
                         try {
