@@ -9,5 +9,5 @@ data class Course(
     var studentLimit: Int = 100,
     var students: MutableSet<UserID> = mutableSetOf(),
     var teachers: MutableSet<UserID> = mutableSetOf(),
-    var grades: MutableSet<Grade> = mutableSetOf(),
+    var gradeModel: MutableSet<Grade> = mutableSetOf(),
 )
