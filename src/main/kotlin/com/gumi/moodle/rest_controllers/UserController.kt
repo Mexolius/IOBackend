@@ -43,7 +43,7 @@ fun Application.userRoutes() {
                     get {
                         parameters(email) { (email) ->
                             val user = dao.getOne(email, includeCrypto = false)
-                                ?: return@parameters call.respond(HttpStatusCode.NotFound)
+                                ?: return@parameters notFoundResponse()
                             call.respond(user)
                         }
                     }

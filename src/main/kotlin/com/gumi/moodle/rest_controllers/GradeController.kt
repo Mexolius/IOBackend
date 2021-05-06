@@ -32,7 +32,7 @@ fun Application.gradeRoutes() {
                             val grade = call.receive<Grade>()
                             val updated = dao.updateOne(
                                 courseID,
-                                push(Course::gradeModel, grade)
+                                push(Course::grades, grade)
                             ) { Course::_id eq it }
 
                             if (updated) call.respond(HttpStatusCode.OK)
@@ -46,7 +46,7 @@ fun Application.gradeRoutes() {
                             val grades = call.receive<MutableSet<Grade>>()
                             val updated = dao.updateOne(
                                 courseID,
-                                Course::gradeModel setTo grades
+                                Course::grades setTo grades
                             ) { Course::_id eq it }
 
                             if (updated) call.respond(HttpStatusCode.OK)
@@ -60,7 +60,7 @@ fun Application.gradeRoutes() {
                             val grade = call.receive<Grade>()
                             val updated = dao.updateOne(
                                 courseID,
-                                Course::gradeModel.posOp setTo grade
+                                Course::grades.posOp setTo grade
                             ) { Course::_id eq it withGradeID gradeID }
 
                             if (updated) call.respond(HttpStatusCode.OK)
@@ -72,7 +72,7 @@ fun Application.gradeRoutes() {
                         parameters(course_id, grade_id) { (courseID, gradeID) ->
                             val updated = dao.updateOne(
                                 courseID,
-                                pullByFilter(Course::gradeModel, Grade::_id eq gradeID)
+                                pullByFilter(Course::grades, Grade::_id eq gradeID)
                             ) { Course::_id eq it }
 
                             if (updated) call.respond(HttpStatusCode.OK)
@@ -86,7 +86,7 @@ fun Application.gradeRoutes() {
                             val grade = call.receive<Int>()
                             val updated = dao.updateOne(
                                 courseID,
-                                Course::gradeModel.posOp / Grade::studentPoints atKey studentID setTo grade
+                                Course::grades.posOp / Grade::studentPoints atKey studentID setTo grade
                             ) { Course::_id eq it withGradeID gradeID }
 
                             if (updated) call.respond(HttpStatusCode.OK)

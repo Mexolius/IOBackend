@@ -53,16 +53,58 @@ class Generator {
             100,
             studentsSublist.map { it._id!! }.toMutableSet(),
             teachersSublist.map { it._id!! }.toMutableSet(),
-            newGradingModel(studentsSublist)
+            newGrading(studentsSublist)
         )
     }
 
-    private fun newGradingModel(students: List<User>): MutableSet<Grade> {
-        val gradingModel = (1..5)
-            .map { newGrade(it) }
-            .toMutableSet()
-        gradingModel.forEach { assignGrades(it, students) }
-        return gradingModel
+    private fun newGrading(students: List<User>): MutableSet<Grade> {
+        val parentGrades = (1..10)
+            .map { newGrade(it, false) }
+        val leafGrades = (11..20)
+            .map { newGrade(it, true) }
+        val loneGrades = (21..25)
+            .map { newGrade(it, true) }
+        leafGrades.forEach { assignGrades(it, students) }
+        loneGrades.forEach { assignGrades(it, students) }
+
+        assignParentsToParents(parentGrades, 3)
+
+        addParentsToLeaves(leafGrades, parentGrades)
+
+        val grades = parentGrades + leafGrades + loneGrades
+        return grades.toMutableSet()
+    }
+
+    private fun assignParentsToParents(parentGrades: List<Grade>, avgChildren: Int) {
+        val starting = parentGrades.toMutableList()
+        val toPop = mutableListOf(popRandomElement(starting), popRandomElement(starting))
+        val finished = mutableListOf<Grade>()
+
+        while (starting.isNotEmpty()) {
+            val node = popRandomElement(toPop)
+            for (i in 1..Random.nextInt(1, avgChildren * 2)) {
+                if (starting.isEmpty()) {
+                    break
+                }
+                val childNode = popRandomElement(starting)
+                childNode.parentID = node._id
+                childNode.level = node.level + 1
+                finished.add(childNode)
+            }
+            toPop.addAll(finished)
+            finished.clear()
+        }
+    }
+
+    private fun addParentsToLeaves(
+        leafGrades: List<Grade>,
+        parentGrades: List<Grade>,
+    ) {
+        leafGrades.forEach {
+            val parent = getRandomElement(parentGrades)
+            it.parentID = parent._id
+            it.level = parent.level + 1
+        }
     }
 
     private fun assignGrades(grade: Grade, students: List<User>) {
@@ -70,13 +112,20 @@ class Generator {
             .forEach { grade.studentPoints[it._id!!] = Random.nextInt(grade.maxPoints) }
     }
 
-    private fun newGrade(number: Int): Grade {
-        return Grade("grade$number", "grade$number", 0, Random.nextInt(1, 100))
+    private fun newGrade(number: Int, isLeaf: Boolean): Grade {
+        return Grade("grade$number", "grade$number", isLeaf, 0, Random.nextInt(1, 100))
     }
 
     private fun <T> getRandomElement(list: List<T>): T {
         val n: Int = Random.nextInt(list.size)
         return list[n]
+    }
+
+    private fun <T> popRandomElement(list: MutableList<T>): T {
+
+
+        val n: Int = Random.nextInt(list.size)
+        return list.removeAt(n)
     }
 
     private fun <T> getRandomSublist(list: List<T>, size: Int): List<T> {
