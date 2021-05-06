@@ -1,5 +1,6 @@
 package com.gumi.moodle.dao
 
+import com.gumi.moodle.USER_COLLECTION
 import com.gumi.moodle.model.User
 import org.bson.conversions.Bson
 import org.litote.kmongo.coroutine.CoroutineCollection
@@ -9,7 +10,7 @@ import org.litote.kmongo.exclude
 class UserDAO : AbstractDAO<User, String>({ User::email eq it }) {
 
     override fun getCollection(): CoroutineCollection<User> =
-        database.getCollection("User")
+        database.getCollection(USER_COLLECTION)
 
     override suspend fun exists(obj: User): Boolean =
         getCollection().find(User::email eq obj.email).toList().isNotEmpty()

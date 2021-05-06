@@ -1,10 +1,12 @@
 package com.gumi.moodle.model
 
 import io.ktor.util.*
+import kotlinx.serialization.Serializable
 import java.security.SecureRandom
 
 typealias UserID = String
 
+@Serializable
 data class User(
     var _id: UserID?,
     var firstName: String,

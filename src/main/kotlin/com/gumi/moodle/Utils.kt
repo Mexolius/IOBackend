@@ -35,6 +35,8 @@ suspend fun validateUser(credentials: UserPasswordCredential): UserSession? {
 
 const val MONGO_URI = "mongodb://localhost:27017"
 const val MONGO_DB_NAME = "IOtest"
+const val USER_COLLECTION = "User"
+const val COURSE_COLLECTION = "Course"
 
 const val user_id = "user_id"
 const val course_id = "course_id"

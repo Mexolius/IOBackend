@@ -45,12 +45,3 @@ abstract class AbstractDAO<T : Any, U>(protected val defaultQueryCreator: (U) ->
     suspend fun drop() =
         getCollection().drop()
 }
-
-infix fun <K, T> KProperty1<out Any?, Map<out K, T>?>.atKey(key: K): KPropertyPath<out Any?, T?> =
-    this.keyProjection(key)
-
-infix fun <K, T> KProperty1<out Any?, Map<out K, T>?>.containsKey(key: K): Bson =
-    this.keyProjection(key) exists true
-
-infix fun <T> KProperty<T>.setTo(value: T): Bson =
-    set(SetTo(this, value))

@@ -7,13 +7,14 @@ import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.features.*
 import io.ktor.http.*
-import io.ktor.jackson.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import io.ktor.serialization.*
 import org.slf4j.event.Level
 
-fun main(args: Array<String>): Unit =
+fun main(args: Array<String>) {
     io.ktor.server.netty.EngineMain.main(args)
+}
 
 /**
  * Please note that you can use any other name instead of *module*.
@@ -28,7 +29,7 @@ fun Application.module(testing: Boolean = false) {
     }
 
     install(ContentNegotiation) {
-        jackson()
+        json()
     }
 
     install(Authentication) {

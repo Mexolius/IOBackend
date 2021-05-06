@@ -4,7 +4,6 @@ import com.gumi.moodle.*
 import com.gumi.moodle.IDField.ID
 import com.gumi.moodle.dao.CourseDAO
 import com.gumi.moodle.model.Course
-import com.gumi.moodle.model.Role
 import com.gumi.moodle.model.Role.*
 import io.ktor.application.*
 import io.ktor.auth.*
