@@ -1,31 +1,16 @@
 package com.gumi.moodle
 
+import com.gumi.moodle.dao.CourseDAO
 import com.gumi.moodle.dao.UserDAO
 import io.ktor.application.*
 import io.ktor.auth.*
-import io.ktor.http.*
-import io.ktor.response.*
-import io.ktor.util.pipeline.*
-
-class MalformedRouteException(val msg: String) : Exception()
-
-fun ApplicationCall.getParameters(vararg names: String): List<String> =
-    names.map { this.parameters[it] ?: throw MalformedRouteException("Missing or malformed $it") }
-
-@ContextDsl
-suspend fun PipelineContext<Unit, ApplicationCall>.parameters(
-    vararg names: String,
-    body: suspend (List<String>) -> Unit
-) = body(names.map {
-    call.parameters[it] ?: return call.respondText(
-        "Missing or malformed $it",
-        status = HttpStatusCode.BadRequest
-    )
-})
+import org.koin.dsl.module
+import org.koin.ktor.ext.inject
 
 
-suspend fun validateUser(credentials: UserPasswordCredential): UserSession? {
-    val user = UserDAO().getOne(credentials.name)
+suspend fun Application.validateUser(credentials: UserPasswordCredential): UserSession? {
+    val userDAO: UserDAO by inject()
+    val user = userDAO.getOne(credentials.name)
     return if (user != null && user.checkPassword(credentials.password)) UserSession(
         credentials.name,
         user._id!!,
@@ -43,3 +28,9 @@ const val course_id = "course_id"
 const val grade_id = "grade_id"
 const val email = "email"
 const val format = "format"
+
+fun Application.gumiModule() = module {
+    val mongoURI = environment.config.propertyOrNull("ktor.mongodb.connectionString")?.getString() ?: MONGO_URI
+    single { UserDAO(mongoURI) }
+    single { CourseDAO(mongoURI) }
+}

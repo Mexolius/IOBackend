@@ -15,19 +15,26 @@ fun main() {
 }
 
 class Generator {
-
+    private val userDAO = UserDAO()
+    private val courseDAO = CourseDAO()
 
     suspend fun insertToDB() {
-        var students = (1..20).map { newUser(it, true, false) }
-        var teachers = (21..30).map { newUser(it, false, true) }
-        val admin = User.createUserWithPlaintextInput("aa", "bb", "aa@aa.aa", "aa", setOf(Role.ADMIN))
-        UserDAO().apply { drop() }.addAll(students + teachers + admin)
+        var students = (1..20).map { newUser(it, isStudent = true, isTeacher = false) }
+        var teachers = (21..30).map { newUser(it, isStudent = false, isTeacher = true) }
+        val admin = User.createUserWithPlaintextInput(
+            firstName = "aa",
+            lastName = "bb",
+            email = "aa@aa.aa",
+            password = "aa",
+            roles = setOf(Role.ADMIN)
+        )
+        userDAO.apply { drop() }.addAll(students + teachers + admin)
 
-        students = UserDAO().getAll()
+        students = userDAO.getAll()
             .filter { Role.STUDENT in it.roles } //redownloading from DB to have id fields not null - db autofills them
-        teachers = UserDAO().getAll().filter { Role.TEACHER in it.roles }
+        teachers = userDAO.getAll().filter { Role.TEACHER in it.roles }
         val courses = (1..10).map { newCourse(it, students, teachers) }
-        CourseDAO().apply { drop() }.addAll(courses)
+        courseDAO.apply { drop() }.addAll(courses)
     }
 
     private fun newUser(number: Int, isStudent: Boolean, isTeacher: Boolean): User {
@@ -35,11 +42,11 @@ class Generator {
         if (isStudent) roles.add(Role.STUDENT)
         if (isTeacher) roles.add(Role.TEACHER)
         return User.createUserWithPlaintextInput(
-            "firstname$number",
-            "lastname$number",
-            "email$number@aa.aa",
-            "aa",
-            roles
+            firstName = "firstname$number",
+            lastName = "lastname$number",
+            email = "email$number@aa.aa",
+            password = "aa",
+            roles = roles
         )
     }
 
@@ -122,8 +129,6 @@ class Generator {
     }
 
     private fun <T> popRandomElement(list: MutableList<T>): T {
-
-
         val n: Int = Random.nextInt(list.size)
         return list.removeAt(n)
     }

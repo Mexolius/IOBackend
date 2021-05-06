@@ -1,27 +1,31 @@
 package com.gumi.moodle.rest_controllers
 
-import com.gumi.moodle.*
+import com.gumi.moodle.course_id
 import com.gumi.moodle.dao.CourseDAO
 import com.gumi.moodle.dao.atKey
 import com.gumi.moodle.dao.setTo
 import com.gumi.moodle.dao.withGradeID
+import com.gumi.moodle.grade_id
 import com.gumi.moodle.model.Course
 import com.gumi.moodle.model.Grade
 import com.gumi.moodle.model.Role.ADMIN
 import com.gumi.moodle.model.Role.TEACHER
+import com.gumi.moodle.user_id
+import com.gumi.moodle.withRole
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import org.koin.ktor.ext.inject
 import org.litote.kmongo.*
 
 
 class GradeController
 
 fun Application.gradeRoutes() {
-    val dao = CourseDAO()
+    val dao: CourseDAO by inject()
 
     routing {
         authenticate("basicAuth") {

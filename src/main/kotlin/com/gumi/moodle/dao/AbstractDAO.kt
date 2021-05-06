@@ -1,19 +1,15 @@
 package com.gumi.moodle.dao
 
 import com.gumi.moodle.MONGO_DB_NAME
-import com.gumi.moodle.MONGO_URI
 import org.bson.conversions.Bson
-import org.litote.kmongo.*
+import org.litote.kmongo.EMPTY_BSON
 import org.litote.kmongo.coroutine.CoroutineCollection
 import org.litote.kmongo.coroutine.coroutine
-import org.litote.kmongo.property.KPropertyPath
 import org.litote.kmongo.reactivestreams.KMongo
-import kotlin.reflect.KProperty
-import kotlin.reflect.KProperty1
 
-abstract class AbstractDAO<T : Any, U>(protected val defaultQueryCreator: (U) -> Bson) {
+abstract class AbstractDAO<T : Any, U>(mongoURI: String, protected val defaultQueryCreator: (U) -> Bson) {
 
-    private val client = KMongo.createClient(MONGO_URI).coroutine
+    private val client = KMongo.createClient(mongoURI).coroutine
     protected val database = client.getDatabase(MONGO_DB_NAME)
 
     protected abstract fun getCollection(): CoroutineCollection<T>

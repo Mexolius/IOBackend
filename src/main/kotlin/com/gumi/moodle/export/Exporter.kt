@@ -11,7 +11,6 @@ import org.apache.poi.ss.usermodel.Row
 import org.apache.poi.ss.util.CellRangeAddress
 import org.apache.poi.ss.util.CellUtil
 import org.apache.poi.xssf.usermodel.*
-import java.awt.Color
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
@@ -38,7 +37,8 @@ class Exporter(val course: Course, val students: List<User>) {
         val sheet = workbook.createSheet("Grades")
 
         val header = listOf("firstName", "lastName") + leafGrades.map { it.name }
-        val rows = course.students.map { s -> studentProps(s) + leafGrades.map { it.studentPoints[s]?.toString() ?: "" } }
+        val rows =
+            course.students.map { s -> studentProps(s) + leafGrades.map { it.studentPoints[s]?.toString() ?: "" } }
 
         val maxLevel = getMaxLevel()
 
@@ -99,8 +99,16 @@ class Exporter(val course: Course, val students: List<User>) {
 
     }
 
-    private fun addNotColoredStyleToCell(row: XSSFRow, it: Int, rowNumber: Int, maxLevel: Int, style4: XSSFCellStyle, style3: XSSFCellStyle) {
-        row.getCell(it, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK)!!.cellStyle = if (rowNumber == maxLevel) style4 else style3
+    private fun addNotColoredStyleToCell(
+        row: XSSFRow,
+        it: Int,
+        rowNumber: Int,
+        maxLevel: Int,
+        style4: XSSFCellStyle,
+        style3: XSSFCellStyle
+    ) {
+        row.getCell(it, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK)!!.cellStyle =
+            if (rowNumber == maxLevel) style4 else style3
     }
 
     private fun addColoredStyleToCell(
@@ -111,7 +119,8 @@ class Exporter(val course: Course, val students: List<User>) {
         bgFillStyles: List<XSSFCellStyle>,
         bgFillStylesBold: List<XSSFCellStyle>,
     ) {
-        row.getCell(it, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK)!!.cellStyle = bgFillStyle(it, rowNumber == maxLevel, bgFillStyles, bgFillStylesBold)
+        row.getCell(it, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK)!!.cellStyle =
+            bgFillStyle(it, rowNumber == maxLevel, bgFillStyles, bgFillStylesBold)
     }
 
     private fun createNotFilledBackgroundStyles(
@@ -120,7 +129,12 @@ class Exporter(val course: Course, val students: List<User>) {
     ): Pair<XSSFCellStyle, XSSFCellStyle> {
         val style = workbook.createCellStyle()
         style.borderBottom = BorderStyle.THIN
-        style.setBottomBorderColor(XSSFColor(Color(80, 80, 80)))
+        style.setBottomBorderColor(
+            XSSFColor(
+                byteArrayOf(80.toByte(), 80.toByte(), 80.toByte()),
+                DefaultIndexedColorMap()
+            )
+        )
 
         val styleBold = workbook.createCellStyle()
         styleBold.cloneStyleFrom(style)
@@ -128,16 +142,34 @@ class Exporter(val course: Course, val students: List<User>) {
         return Pair(style, styleBold)
     }
 
-    private fun createFilledBackgroundStyles(workbook: XSSFWorkbook, boldFont: XSSFFont?): Pair<List<XSSFCellStyle>, List<XSSFCellStyle>> {
+    private fun createFilledBackgroundStyles(
+        workbook: XSSFWorkbook,
+        boldFont: XSSFFont?
+    ): Pair<List<XSSFCellStyle>, List<XSSFCellStyle>> {
         val style1 = workbook.createCellStyle()
-        style1.setFillForegroundColor(XSSFColor(Color(220, 220, 220)))
+        style1.setFillForegroundColor(
+            XSSFColor(
+                byteArrayOf(220.toByte(), 220.toByte(), 220.toByte()),
+                DefaultIndexedColorMap()
+            )
+        )
         style1.fillPattern = FillPatternType.SOLID_FOREGROUND
         style1.borderBottom = BorderStyle.THIN
-        style1.setBottomBorderColor(XSSFColor(Color(80, 80, 80)))
+        style1.setBottomBorderColor(
+            XSSFColor(
+                byteArrayOf(80.toByte(), 80.toByte(), 80.toByte()),
+                DefaultIndexedColorMap()
+            )
+        )
 
         val style2 = workbook.createCellStyle()
         style2.cloneStyleFrom(style1)
-        style2.setFillForegroundColor(XSSFColor(Color(240, 240, 240)))
+        style2.setFillForegroundColor(
+            XSSFColor(
+                byteArrayOf(240.toByte(), 240.toByte(), 240.toByte()),
+                DefaultIndexedColorMap()
+            )
+        )
 
         val bgFillStyles = listOf(style1, style2)
         val bgFillStylesBold = bgFillStyles
@@ -183,7 +215,12 @@ class Exporter(val course: Course, val students: List<User>) {
         while (i < leafGrades.size) {
             val first = i + numberOfDescriptors
             var last = i + numberOfDescriptors
-            while (last < leafGrades.size + numberOfDescriptors && bothCellsContainIdenticalValues(row, last, last + 1)) {
+            while (last < leafGrades.size + numberOfDescriptors && bothCellsContainIdenticalValues(
+                    row,
+                    last,
+                    last + 1
+                )
+            ) {
                 last++
                 i++
             }

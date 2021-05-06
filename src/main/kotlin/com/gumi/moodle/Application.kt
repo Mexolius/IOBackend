@@ -11,9 +11,11 @@ import io.ktor.http.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.serialization.*
+import org.koin.ktor.ext.Koin
 import org.slf4j.event.Level
 
 fun main(args: Array<String>) {
+    Migrations()
     io.ktor.server.netty.EngineMain.main(args)
 }
 
@@ -24,6 +26,9 @@ fun main(args: Array<String>) {
 @Suppress("unused") // Referenced in application.conf
 @kotlin.jvm.JvmOverloads
 fun Application.module(testing: Boolean = false) {
+    install(Koin){
+        modules(gumiModule())
+    }
 
     install(CallLogging) {
         level = Level.INFO

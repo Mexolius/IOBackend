@@ -1,5 +1,6 @@
 package com.gumi.moodle.dao
 
+import com.gumi.moodle.MONGO_URI
 import com.gumi.moodle.USER_COLLECTION
 import com.gumi.moodle.model.User
 import org.bson.conversions.Bson
@@ -7,7 +8,7 @@ import org.litote.kmongo.coroutine.CoroutineCollection
 import org.litote.kmongo.eq
 import org.litote.kmongo.exclude
 
-class UserDAO : AbstractDAO<User, String>({ User::email eq it }) {
+class UserDAO(mongoURI: String = MONGO_URI) : AbstractDAO<User, String>(mongoURI, { User::email eq it }) {
 
     override fun getCollection(): CoroutineCollection<User> =
         database.getCollection(USER_COLLECTION)

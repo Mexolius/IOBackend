@@ -1,6 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val ktorVersion: String by project
+val koinVersion: String by project
 val kotlinVersion: String by project
 val logbackVersion: String by project
 
@@ -29,6 +30,7 @@ dependencies {
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("io.ktor:ktor-serialization:$ktorVersion")
     implementation("io.ktor:ktor-auth:$ktorVersion")
+    implementation("io.insert-koin:koin-ktor:$koinVersion")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("org.litote.kmongo:kmongo-coroutine:4.2.5")
     implementation("org.junit.jupiter:junit-jupiter:5.7.0")
@@ -37,7 +39,6 @@ dependencies {
     implementation("org.apache.poi:poi-ooxml:5.0.0")
 
     testImplementation("io.ktor:ktor-server-tests:$ktorVersion")
-
 }
 
 tasks.register<Jar>("fatJar") {
@@ -48,7 +49,7 @@ tasks.register<Jar>("fatJar") {
 
     from(sourceSets.main.get().output)
 
-    manifest{
+    manifest {
         attributes(
             "Main-Class" to application.mainClass,
             "Implementation-Version" to archiveVersion
@@ -61,6 +62,6 @@ tasks.register<Jar>("fatJar") {
     })
 }
 
-tasks.assembleDist{
+tasks.assembleDist {
     dependsOn("fatJar")
 }

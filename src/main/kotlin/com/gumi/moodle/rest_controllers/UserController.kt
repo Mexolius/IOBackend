@@ -5,7 +5,6 @@ import com.gumi.moodle.dao.UserDAO
 import com.gumi.moodle.email
 import com.gumi.moodle.model.Role.ADMIN
 import com.gumi.moodle.model.User
-import com.gumi.moodle.parameters
 import com.gumi.moodle.withRole
 import io.ktor.application.*
 import io.ktor.auth.*
@@ -13,12 +12,13 @@ import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import org.koin.ktor.ext.inject
 
 
 class UserController
 
 fun Application.userRoutes() {
-    val dao = UserDAO()
+    val dao: UserDAO by inject()
 
     routing {
         authenticate("basicAuth") {

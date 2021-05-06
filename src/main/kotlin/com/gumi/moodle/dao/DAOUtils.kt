@@ -20,4 +20,4 @@ infix fun <T> KProperty<T>.setTo(value: T): Bson =
     set(SetTo(this, value))
 
 infix fun Bson.withGradeID(id: GradeID): Bson =
-    and(this, Course::gradeModel / Grade::_id eq id)
+    and(this, Course::grades / Grade::_id eq id)
