@@ -31,7 +31,13 @@ dependencies {
     implementation("io.ktor:ktor-auth:$ktorVersion")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
     implementation("org.litote.kmongo:kmongo-coroutine:4.2.5")
+    implementation("org.junit.jupiter:junit-jupiter:5.7.0")
+    implementation("com.github.doyaaaaaken:kotlin-csv-jvm:0.15.2")
+    implementation("org.apache.poi:poi:5.0.0")
+    implementation("org.apache.poi:poi-ooxml:5.0.0")
+
     testImplementation("io.ktor:ktor-server-tests:$ktorVersion")
+
 }
 
 tasks.register<Jar>("fatJar") {

@@ -39,11 +39,11 @@ class CourseDAO : AbstractDAO<Course, String>({ Course::name eq it }) {
         Course::description,
         Course::studentLimit,
         Course::teachers,
-        Course::gradeModel / Grade::_id,
-        Course::gradeModel / Grade::name,
-        Course::gradeModel / Grade::level,
-        Course::gradeModel / Grade::maxPoints,
-        Course::gradeModel / Grade::thresholds,
-        Course::gradeModel / Grade::studentPoints atKey studentID,
+        Course::grades / Grade::_id,
+        Course::grades / Grade::name,
+        Course::grades / Grade::level,
+        Course::grades / Grade::maxPoints,
+        Course::grades / Grade::thresholds,
+        Course::grades / Grade::studentPoints atKey studentID,
     )
 }

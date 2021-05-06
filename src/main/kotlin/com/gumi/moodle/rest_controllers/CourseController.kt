@@ -34,10 +34,7 @@ fun Application.courseRoutes() {
                 route("/course") {
                     post {
                         val course = call.receive<Course>()
-                        if (dao.exists(course)) return@post call.respondText(
-                            "Duplicate course name",
-                            status = HttpStatusCode.Conflict
-                        )
+                        if (dao.exists(course)) return@post duplicateCourseNameResponse()
                         dao.add(course)
 
                         call.respond(HttpStatusCode.OK)
@@ -90,10 +87,7 @@ fun Application.courseRoutes() {
                                 else
                                     dao.getOne(courseID) { Course::_id eq it }
 
-                            course = course ?: return@parameters call.respondText(
-                                "No course matches requested course id",
-                                status = HttpStatusCode.BadRequest
-                            )
+                            course = course ?: return@parameters notFoundResponse()
 
                             call.respond(course)
                         }

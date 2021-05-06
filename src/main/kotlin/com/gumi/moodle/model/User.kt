@@ -38,13 +38,24 @@ data class User(
 
     companion object {
         fun createUserWithPlaintextInput(
+            id: String?,
             firstName: String,
             lastName: String,
             email: String,
             password: String,
             roles: Set<Role> = setOf(Role.STUDENT),
         ): User {
-            return User(_id = null, firstName, lastName, email, roles = roles).apply { hashPassword(password) }
+            return User(id, firstName, lastName, email, roles = roles).apply { hashPassword(password) }
+        }
+
+        fun createUserWithPlaintextInput(
+            firstName: String,
+            lastName: String,
+            email: String,
+            password: String,
+            roles: Set<Role> = setOf(Role.STUDENT),
+        ): User {
+            return createUserWithPlaintextInput(null, firstName, lastName, email, password, roles)
         }
 
         fun createUserWithPlaintextInput(
