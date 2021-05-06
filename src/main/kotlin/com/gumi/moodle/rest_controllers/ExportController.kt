@@ -26,7 +26,7 @@ fun Application.exportRoutes() {
 
     routing {
         authenticate("basicAuth") {
-            withRole(Role.ADMIN) {
+            withRole(Role.ADMIN, Role.TEACHER) {
                 route("/export/course/{$format}/{$course_id}") {
                     get {
                         parameters(course_id, format) { (courseID, format) ->

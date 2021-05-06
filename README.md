@@ -25,3 +25,4 @@ Short description of all REST API endpoints. Order is the same as in code.
 | `/api/grades/{course_id}`                        | post         | admin, teacher                     | adds new grades to grade model        | list of: [grade](/misc/exampleGrade.json)|
 | `/api/grade/{course_id}/{grade_id}`              | post, delete | admin, teacher                     | updates or deletes grade              | [grade](/misc/exampleGrade.json)         |
 | `/api/grade/{course_id}/{grade_id}/{user_id}`    | post         | admin, teacher                     | updates student's grade               | int                                      |
+| `/export/course/{format}/{course_id}`            | get          | admin, teacher                     | exports data to csv or xls format     | ---                                      |
