@@ -6,6 +6,8 @@ import io.ktor.application.*
 import io.ktor.auth.*
 import org.koin.dsl.module
 import org.koin.ktor.ext.inject
+import org.litote.kmongo.coroutine.coroutine
+import org.litote.kmongo.reactivestreams.KMongo
 
 
 suspend fun Application.validateUser(credentials: UserPasswordCredential): UserSession? {
@@ -31,6 +33,7 @@ const val format = "format"
 
 fun Application.gumiModule() = module {
     val mongoURI = environment.config.propertyOrNull("ktor.mongodb.connectionString")?.getString() ?: MONGO_URI
+    single { KMongo.createClient(MONGO_URI).coroutine.getDatabase(MONGO_DB_NAME) }
     single { UserDAO(mongoURI) }
     single { CourseDAO(mongoURI) }
 }

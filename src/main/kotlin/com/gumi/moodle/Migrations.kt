@@ -1,23 +1,21 @@
 package com.gumi.moodle
 
 import com.gumi.moodle.model.Course
-import kotlinx.coroutines.runBlocking
+import io.ktor.application.*
+import org.koin.ktor.ext.inject
 import org.litote.kmongo.MongoOperator.exists
 import org.litote.kmongo.MongoOperator.rename
-import org.litote.kmongo.coroutine.coroutine
-import org.litote.kmongo.reactivestreams.KMongo
+import org.litote.kmongo.coroutine.CoroutineDatabase
 
-class Migrations {
+suspend fun Application.migrations() {
 
-    private val client = KMongo.createClient(MONGO_URI).coroutine
-    private val database = client.getDatabase(MONGO_DB_NAME)
+    val database: CoroutineDatabase by inject()
+    val migrations: MutableList<suspend () -> Unit> = mutableListOf()
 
-    init {
-        runBlocking { gradeModelToGrades() }
-    }
-
-    private suspend fun gradeModelToGrades() {
+    migrations += {
         database.getCollection<Course>(COURSE_COLLECTION)
-            .updateMany("{'gradeModel': {$exists: true}", "{$rename: {'gradeModel':'grades'}}")
+            .updateMany("{'gradeModel': {$exists: true}}", "{$rename: {'gradeModel':'grades'}}")
     }
+
+    migrations.forEach { it.invoke() }
 }

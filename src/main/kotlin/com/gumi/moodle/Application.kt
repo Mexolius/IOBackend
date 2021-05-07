@@ -11,11 +11,11 @@ import io.ktor.http.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.serialization.*
+import kotlinx.coroutines.runBlocking
 import org.koin.ktor.ext.Koin
 import org.slf4j.event.Level
 
 fun main(args: Array<String>) {
-    Migrations()
     io.ktor.server.netty.EngineMain.main(args)
 }
 
@@ -26,7 +26,8 @@ fun main(args: Array<String>) {
 @Suppress("unused") // Referenced in application.conf
 @kotlin.jvm.JvmOverloads
 fun Application.module(testing: Boolean = false) {
-    install(Koin){
+
+    install(Koin) {
         modules(gumiModule())
     }
 
@@ -68,6 +69,7 @@ fun Application.module(testing: Boolean = false) {
         anyHost()
     }
 
+
     routing {
         get("/health") {
             call.respond(HttpStatusCode.OK)
@@ -91,4 +93,6 @@ fun Application.module(testing: Boolean = false) {
         gradeRoutes()
         exportRoutes()
     }
+
+    runBlocking { migrations() }
 }
