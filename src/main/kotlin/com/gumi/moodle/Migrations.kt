@@ -2,6 +2,7 @@ package com.gumi.moodle
 
 import com.gumi.moodle.model.Course
 import kotlinx.coroutines.runBlocking
+import org.litote.kmongo.MongoOperator.exists
 import org.litote.kmongo.MongoOperator.rename
 import org.litote.kmongo.coroutine.coroutine
 import org.litote.kmongo.reactivestreams.KMongo
@@ -16,6 +17,7 @@ class Migrations {
     }
 
     private suspend fun gradeModelToGrades() {
-        database.getCollection<Course>(COURSE_COLLECTION).updateMany("{}", "{$rename: {'gradeModel':'grades'}}")
+        database.getCollection<Course>(COURSE_COLLECTION)
+            .updateMany("{'gradeModel': {$exists: true}", "{$rename: {'gradeModel':'grades'}}")
     }
 }
