@@ -1,17 +1,21 @@
 package com.gumi.moodle.dao
 
+import com.gumi.moodle.COURSE_COLLECTION
+import com.gumi.moodle.MONGO_URI
 import com.gumi.moodle.model.Course
 import com.gumi.moodle.model.Grade
-import com.gumi.moodle.model.GradeID
 import com.gumi.moodle.model.UserID
 import org.bson.conversions.Bson
-import org.litote.kmongo.*
+import org.litote.kmongo.EMPTY_BSON
 import org.litote.kmongo.coroutine.CoroutineCollection
+import org.litote.kmongo.div
+import org.litote.kmongo.eq
+import org.litote.kmongo.include
 
-class CourseDAO : AbstractDAO<Course, String>({ Course::name eq it }) {
+class CourseDAO(mongoURI: String = MONGO_URI) : AbstractDAO<Course, String>(mongoURI, { Course::name eq it }) {
 
     override fun getCollection(): CoroutineCollection<Course> =
-        database.getCollection("Course")
+        database.getCollection(COURSE_COLLECTION)
 
     override suspend fun exists(obj: Course): Boolean =
         getCollection().find(Course::name eq obj.name).toList().isNotEmpty()
@@ -44,6 +48,3 @@ class CourseDAO : AbstractDAO<Course, String>({ Course::name eq it }) {
         Course::grades / Grade::studentPoints atKey studentID,
     )
 }
-
-infix fun Bson.withGradeID(id: GradeID): Bson =
-    and(this, Course::grades / Grade::_id eq id)

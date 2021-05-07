@@ -1,7 +1,10 @@
 package com.gumi.moodle.model
 
+import kotlinx.serialization.Serializable
+
 typealias CourseID = String
 
+@Serializable
 data class Course(
     var _id: CourseID?,
     var name: String,
