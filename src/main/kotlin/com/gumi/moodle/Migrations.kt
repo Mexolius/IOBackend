@@ -10,12 +10,15 @@ import org.litote.kmongo.coroutine.CoroutineDatabase
 suspend fun Application.migrations() {
 
     val database: CoroutineDatabase by inject()
-    val migrations: MutableList<suspend () -> Unit> = mutableListOf()
+    val migrations: MutableMap<String, suspend () -> Unit> = mutableMapOf()
 
-    migrations += {
+    migrations += ("gradeModel to grades" to {
         database.getCollection<Course>(COURSE_COLLECTION)
             .updateMany("{'gradeModel': {$exists: true}}", "{$rename: {'gradeModel':'grades'}}")
-    }
+    })
 
-    migrations.forEach { it.invoke() }
+    migrations.forEach {
+        environment.log.info("Running migration ${it.key}")
+        it.value.invoke()
+    }
 }
