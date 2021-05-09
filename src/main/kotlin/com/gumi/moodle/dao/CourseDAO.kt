@@ -46,6 +46,7 @@ class CourseDAO(mongoURI: String = MONGO_URI) : AbstractDAO<Course, String>(mong
         Course::grades / Grade::maxPoints,
         Course::grades / Grade::thresholds,
         Course::grades / Grade::parentID,
+        Course::grades / Grade::isLeaf,
         Course::grades / Grade::studentPoints atKey studentID,
     )
 }
