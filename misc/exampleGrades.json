@@ -6,7 +6,8 @@
     "maxPoints": 60,
     "studentPoints": {},
     "thresholds": [],
-    "parentID": null
+    "parentID": null,
+    "isLeaf": false
   },
   {
     "_id": "id2",
@@ -15,7 +16,8 @@
     "maxPoints": 60,
     "studentPoints": {},
     "thresholds": [],
-    "parentID": "id1"
+    "parentID": "id1",
+    "isLeaf": false
   },
   {
     "_id": "id3",
@@ -24,7 +26,8 @@
     "maxPoints": 60,
     "studentPoints": {},
     "thresholds": [],
-    "parentID": "id2"
+    "parentID": "id2",
+    "isLeaf": true
   },
   {
     "_id": "id3",
@@ -33,6 +36,7 @@
     "maxPoints": 60,
     "studentPoints": {},
     "thresholds": [],
-    "parentID": "id2"
+    "parentID": "id2",
+    "isLeaf": true
   }
 ]
