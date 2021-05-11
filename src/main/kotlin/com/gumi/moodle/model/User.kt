@@ -2,6 +2,7 @@ package com.gumi.moodle.model
 
 import io.ktor.util.*
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import java.security.SecureRandom
 
 typealias UserID = String
@@ -16,6 +17,7 @@ data class User(
     var salt: String = "",
     var roles: Set<Role> = setOf(Role.STUDENT),
 ) {
+    @Transient
     private val digestFunction = getDigestFunction("SHA-256") { salt }
 
     fun hashPassword(plaintext: String) {
