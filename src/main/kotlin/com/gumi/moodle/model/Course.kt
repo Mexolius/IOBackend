@@ -6,7 +6,7 @@ typealias CourseID = String
 
 @Serializable
 data class Course(
-    var _id: CourseID?,
+    var _id: CourseID? = null,
     var name: String,
     var description: String,
     var studentLimit: Int = 100,

@@ -9,7 +9,7 @@ typealias UserID = String
 
 @Serializable
 data class User(
-    var _id: UserID?,
+    var _id: UserID? = null,
     var firstName: String,
     var lastName: String,
     var email: String,

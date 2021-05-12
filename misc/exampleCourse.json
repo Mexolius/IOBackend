@@ -26,7 +26,8 @@
         0.7,
         1.0
       ],
-      "parentID": null
+      "parentID": null,
+      "isLeaf": true
     }
   ]
 }
