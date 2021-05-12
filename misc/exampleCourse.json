@@ -11,7 +11,7 @@
     "teacher_id1",
     "teacher_id2"
   ],
-  "gradeModel": [
+  "grades": [
     {
       "_id": "id1",
       "name": "kolos1",

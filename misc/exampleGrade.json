@@ -3,6 +3,7 @@
   "name": "kolos1",
   "level": 0,
   "maxPoints": 60,
+  "aggregation": "SUM",
   "studentPoints": {
     "student_id": 30
   },
@@ -11,5 +12,6 @@
     0.7,
     1.0
   ],
-  "parentID": null
+  "parentID": null,
+  "isLeaf": false
 }

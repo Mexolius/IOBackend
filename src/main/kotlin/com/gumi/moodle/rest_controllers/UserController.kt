@@ -12,12 +12,13 @@ import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import org.koin.ktor.ext.inject
 
 
 class UserController
 
 fun Application.userRoutes() {
-    val dao = UserDAO()
+    val dao: UserDAO by inject()
 
     routing {
         authenticate("basicAuth") {
@@ -40,13 +41,11 @@ fun Application.userRoutes() {
             withRole(ADMIN, idField = EMAIL()) {
                 route("/user/{$email}") {
                     get {
-                        val email = call.parameters[email] ?: return@get call.respondText(
-                            "Missing or malformed email",
-                            status = HttpStatusCode.BadRequest
-                        )
-                        val user = dao.getOne(email, includeCrypto = false)
-                            ?: return@get call.respond(HttpStatusCode.NotFound)
-                        call.respond(user)
+                        parameters(email) { (email) ->
+                            val user = dao.getOne(email, includeCrypto = false)
+                                ?: return@parameters notFoundResponse()
+                            call.respond(user)
+                        }
                     }
                 }
             }

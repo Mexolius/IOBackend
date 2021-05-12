@@ -1,10 +1,13 @@
 package com.gumi.moodle.model
 
 import io.ktor.util.*
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import java.security.SecureRandom
 
 typealias UserID = String
 
+@Serializable
 data class User(
     var _id: UserID?,
     var firstName: String,
@@ -14,6 +17,7 @@ data class User(
     var salt: String = "",
     var roles: Set<Role> = setOf(Role.STUDENT),
 ) {
+    @Transient
     private val digestFunction = getDigestFunction("SHA-256") { salt }
 
     fun hashPassword(plaintext: String) {
@@ -36,19 +40,25 @@ data class User(
 
     companion object {
         fun createUserWithPlaintextInput(
+            id: UserID? = null,
             firstName: String,
             lastName: String,
             email: String,
             password: String,
             roles: Set<Role> = setOf(Role.STUDENT),
-        ): User {
-            return User(_id = null, firstName, lastName, email, roles = roles).apply { hashPassword(password) }
-        }
+        ): User = User(id, firstName, lastName, email, roles = roles).apply { hashPassword(password) }
+
 
         fun createUserWithPlaintextInput(
             user: User,
-        ): User {
-            return createUserWithPlaintextInput(user.firstName, user.lastName, user.email, user.password, user.roles)
-        }
+        ): User = createUserWithPlaintextInput(
+            firstName = user.firstName,
+            lastName = user.lastName,
+            email = user.email,
+            password = user.password,
+            roles = user.roles
+        )
     }
 }
+
+enum class Role { ADMIN, STUDENT, TEACHER }

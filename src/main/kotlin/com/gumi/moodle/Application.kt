@@ -1,19 +1,23 @@
 package com.gumi.moodle
 
 import com.gumi.moodle.rest_controllers.courseRoutes
+import com.gumi.moodle.rest_controllers.exportRoutes
 import com.gumi.moodle.rest_controllers.gradeRoutes
 import com.gumi.moodle.rest_controllers.userRoutes
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.features.*
 import io.ktor.http.*
-import io.ktor.jackson.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import io.ktor.serialization.*
+import kotlinx.coroutines.runBlocking
+import org.koin.ktor.ext.Koin
 import org.slf4j.event.Level
 
-fun main(args: Array<String>): Unit =
+fun main(args: Array<String>) {
     io.ktor.server.netty.EngineMain.main(args)
+}
 
 /**
  * Please note that you can use any other name instead of *module*.
@@ -23,12 +27,16 @@ fun main(args: Array<String>): Unit =
 @kotlin.jvm.JvmOverloads
 fun Application.module(testing: Boolean = false) {
 
+    install(Koin) {
+        modules(gumiModule())
+    }
+
     install(CallLogging) {
         level = Level.INFO
     }
 
     install(ContentNegotiation) {
-        jackson()
+        json()
     }
 
     install(Authentication) {
@@ -61,6 +69,7 @@ fun Application.module(testing: Boolean = false) {
         anyHost()
     }
 
+
     routing {
         get("/health") {
             call.respond(HttpStatusCode.OK)
@@ -82,5 +91,8 @@ fun Application.module(testing: Boolean = false) {
         userRoutes()
         courseRoutes()
         gradeRoutes()
+        exportRoutes()
     }
+
+    if (!testing) runBlocking { migrations() } //to be fixed
 }
