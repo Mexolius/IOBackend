@@ -33,10 +33,10 @@ fun Application.gradeRoutes() {
                 route("/grade/{$course_id}") {
                     post {
                         parameters(course_id) { (courseID) ->
-                            val grade = call.receive<Grade>()
+                            val grade = call.receive<List<Grade>>()
                             val updated = dao.updateOne(
                                 courseID,
-                                push(Course::grades, grade)
+                                pushEach(Course::grades, grade)
                             ) { Course::_id eq it }
 
                             if (updated) call.respond(HttpStatusCode.OK)
