@@ -92,6 +92,7 @@ fun Application.courseRoutes() {
                                     dao.getOne(courseID) { Course::_id eq it }
 
                             course = course ?: return@parameters notFoundResponse()
+                            course.isEnrolled = (course.students + course.teachers).contains(userID)
 
                             call.respond(course)
                         }

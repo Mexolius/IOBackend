@@ -6,11 +6,8 @@ import com.gumi.moodle.model.Course
 import com.gumi.moodle.model.Grade
 import com.gumi.moodle.model.UserID
 import org.bson.conversions.Bson
-import org.litote.kmongo.EMPTY_BSON
+import org.litote.kmongo.*
 import org.litote.kmongo.coroutine.CoroutineCollection
-import org.litote.kmongo.div
-import org.litote.kmongo.eq
-import org.litote.kmongo.include
 
 class CourseDAO(mongoURI: String = MONGO_URI) : AbstractDAO<Course, String>(mongoURI, { Course::name eq it }) {
 
@@ -39,6 +36,7 @@ class CourseDAO(mongoURI: String = MONGO_URI) : AbstractDAO<Course, String>(mong
         Course::name,
         Course::description,
         Course::studentLimit,
+        Course::students,
         Course::teachers,
         Course::grades / Grade::_id,
         Course::grades / Grade::name,
