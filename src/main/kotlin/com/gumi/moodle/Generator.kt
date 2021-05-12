@@ -2,11 +2,10 @@ package com.gumi.moodle
 
 import com.gumi.moodle.dao.CourseDAO
 import com.gumi.moodle.dao.UserDAO
-import com.gumi.moodle.model.Course
-import com.gumi.moodle.model.Grade
-import com.gumi.moodle.model.Role
-import com.gumi.moodle.model.User
+import com.gumi.moodle.dao.setTo
+import com.gumi.moodle.model.*
 import kotlinx.coroutines.runBlocking
+import org.litote.kmongo.eq
 import kotlin.random.Random
 
 
@@ -30,11 +29,15 @@ class Generator {
         )
         userDAO.apply { drop() }.addAll(students + teachers + admin)
 
-        students = userDAO.getAll()
-            .filter { Role.STUDENT in it.roles } //redownloading from DB to have id fields not null - db autofills them
+        //redownloading from DB to have id fields not null - db autofills them
+        students = userDAO.getAll().filter { Role.STUDENT in it.roles }
         teachers = userDAO.getAll().filter { Role.TEACHER in it.roles }
         val courses = (1..10).map { newCourse(it, students, teachers) }
         courseDAO.apply { drop() }.addAll(courses)
+
+        courseDAO.getAll().forEach { addNotificationsToStudents(it, students) }
+
+        students.forEach { updateNotifications(it) } //couldn't find a way to do it in one update
     }
 
     private fun newUser(number: Int, isStudent: Boolean, isTeacher: Boolean): User {
@@ -121,6 +124,25 @@ class Generator {
 
     private fun newGrade(number: Int, isLeaf: Boolean): Grade {
         return Grade("grade$number", "grade$number", isLeaf, 0, Random.nextInt(1, 100))
+    }
+
+    private fun addNotificationsToStudents(course: Course, students: List<User>) {
+        val now = System.currentTimeMillis()
+        val studentMap = students.associateBy { it._id }
+        val notificationsMap = course.grades
+            .map { g -> g.studentPoints.keys.associateWith { Notification(course._id as String, g._id, now) } }
+            .flatMap { it.entries }
+            .groupBy { it.key }
+            .mapValues { entry -> entry.value.map { it.value } }
+
+        notificationsMap.forEach { studentMap[it.key]?.notifications?.addAll(it.value) }
+    }
+
+    private suspend fun updateNotifications(s: User) {
+        userDAO.updateOne(
+            s._id as String,
+            User::notifications setTo s.notifications
+        ) { User::_id eq it }
     }
 
     private fun <T> getRandomElement(list: List<T>): T {
