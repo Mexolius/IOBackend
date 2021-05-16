@@ -4,6 +4,7 @@ import com.gumi.moodle.dao.CourseDAO
 import com.gumi.moodle.dao.UserDAO
 import io.ktor.application.*
 import io.ktor.auth.*
+import kotlinx.serialization.json.Json
 import org.koin.dsl.module
 import org.koin.ktor.ext.inject
 import org.litote.kmongo.coroutine.coroutine

@@ -5,6 +5,7 @@ import com.gumi.moodle.dao.UserDAO
 import com.gumi.moodle.email
 import com.gumi.moodle.model.Role.ADMIN
 import com.gumi.moodle.model.User
+import com.gumi.moodle.model.UserSerializer
 import com.gumi.moodle.withRole
 import io.ktor.application.*
 import io.ktor.auth.*
@@ -44,7 +45,7 @@ fun Application.userRoutes() {
                         parameters(email) { (email) ->
                             val user = dao.getOne(email, includeCrypto = false)
                                 ?: return@parameters notFoundResponse()
-                            call.respond(user)
+                            call.respond(UserSerializer, user)
                         }
                     }
                 }

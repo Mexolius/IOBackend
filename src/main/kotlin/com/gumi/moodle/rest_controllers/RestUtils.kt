@@ -4,30 +4,31 @@ import io.ktor.application.*
 import io.ktor.http.*
 import io.ktor.response.*
 import io.ktor.util.pipeline.*
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.json.Json
 
-suspend fun PipelineContext<Unit, ApplicationCall>.wrongIDResponse() {
+suspend inline fun PipelineContext<Unit, ApplicationCall>.wrongIDResponse() {
     call.respondText(
         text = "Missing or malformed id",
         status = HttpStatusCode.BadRequest
     )
 }
 
-
-suspend fun PipelineContext<Unit, ApplicationCall>.notFoundResponse() {
+suspend inline fun PipelineContext<Unit, ApplicationCall>.notFoundResponse() {
     call.respondText(
         text = "Not found in database",
         status = HttpStatusCode.NotFound
     )
 }
 
-suspend fun PipelineContext<Unit, ApplicationCall>.duplicateCourseNameResponse() {
+suspend inline fun PipelineContext<Unit, ApplicationCall>.duplicateCourseNameResponse() {
     call.respondText(
         text = "Duplicate course name",
         status = HttpStatusCode.Conflict
     )
 }
 
-suspend fun PipelineContext<Unit, ApplicationCall>.malformedRouteResponse(name: String) {
+suspend inline fun PipelineContext<Unit, ApplicationCall>.malformedRouteResponse(name: String) {
     call.respondText(
         text = "Missing or malformed $name",
         status = HttpStatusCode.BadRequest
@@ -35,9 +36,12 @@ suspend fun PipelineContext<Unit, ApplicationCall>.malformedRouteResponse(name: 
 }
 
 @ContextDsl
-suspend fun PipelineContext<Unit, ApplicationCall>.parameters(
+suspend inline fun PipelineContext<Unit, ApplicationCall>.parameters(
     vararg names: String,
-    body: suspend (List<String>) -> Unit
+    body: (List<String>) -> Unit
 ) = body(names.map {
     call.parameters[it] ?: return malformedRouteResponse(it)
 })
+
+suspend inline fun <reified T : Any> ApplicationCall.respond(serializer: KSerializer<T>, value: T): Unit =
+    this.respond(Json { encodeDefaults = true }.encodeToJsonElement(serializer, value))

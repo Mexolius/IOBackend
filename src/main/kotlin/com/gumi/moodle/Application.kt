@@ -94,5 +94,5 @@ fun Application.module(testing: Boolean = false) {
         exportRoutes()
     }
 
-    if (!testing) runBlocking { migrations() } //to be fixed
+    if (!testing) runBlocking { migrations() }
 }
