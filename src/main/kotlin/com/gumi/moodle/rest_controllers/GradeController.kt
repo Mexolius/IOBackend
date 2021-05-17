@@ -35,10 +35,10 @@ fun Application.gradeRoutes() {
                 route("/grade/{$course_id}") {
                     post {
                         parameters(course_id) { (courseID) ->
-                            val grade = call.receive<Grade>()
+                            val grade = call.receive<List<Grade>>()
                             val updated = dao.updateOne(
                                 courseID,
-                                push(Course::grades, grade)
+                                pushEach(Course::grades, grade)
                             ) { Course::_id eq it }
 
                             if (updated) call.respond(HttpStatusCode.OK)
@@ -81,6 +81,21 @@ fun Application.gradeRoutes() {
                                 pullByFilter(Course::grades, Grade::_id eq gradeID)
                             ) { Course::_id eq it }
 
+                            if (updated) call.respond(HttpStatusCode.OK)
+                            else call.respond(HttpStatusCode.NotModified)
+                        }
+                    }
+                }
+                route("/grade/many/{$course_id}/{$grade_id}"){
+                    post {
+                        parameters(course_id, grade_id) { (courseID, gradeID) ->
+                            val grades = call.receive<Map<String, Int>>()
+                            val updated = dao.updateOne(
+                                courseID,
+                                combine(grades.map {
+                                        (k, v) -> Course::grades.posOp / Grade::studentPoints atKey k setTo v
+                                })
+                            ) { Course::_id eq it withGradeID gradeID }
                             if (updated) call.respond(HttpStatusCode.OK)
                             else call.respond(HttpStatusCode.NotModified)
                         }
