@@ -1,9 +1,6 @@
 package com.gumi.moodle
 
-import com.gumi.moodle.rest_controllers.courseRoutes
-import com.gumi.moodle.rest_controllers.exportRoutes
-import com.gumi.moodle.rest_controllers.gradeRoutes
-import com.gumi.moodle.rest_controllers.userRoutes
+import com.gumi.moodle.rest_controllers.*
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.features.*
@@ -92,6 +89,7 @@ fun Application.module(testing: Boolean = false) {
         courseRoutes()
         gradeRoutes()
         exportRoutes()
+        histogramRoutes()
     }
 
     if (!testing) runBlocking { migrations() } //to be fixed

@@ -30,6 +30,7 @@ const val course_id = "course_id"
 const val grade_id = "grade_id"
 const val email = "email"
 const val format = "format"
+const val buckets = "buckets"
 
 fun Application.gumiModule() = module {
     val mongoURI = environment.config.propertyOrNull("ktor.mongodb.connectionString")?.getString() ?: MONGO_URI
