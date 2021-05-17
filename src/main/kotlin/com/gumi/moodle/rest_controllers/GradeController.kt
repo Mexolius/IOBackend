@@ -90,7 +90,9 @@ fun Application.gradeRoutes() {
                             val grades = call.receive<Map<String, Int>>()
                             val updated = dao.updateOne(
                                 courseID,
-                                Course::grades.posOp / Grade::studentPoints setTo grades
+                                combine(grades.map {
+                                        (k, v) -> Course::grades.posOp / Grade::studentPoints atKey k setTo v
+                                })
                             ) { Course::_id eq it withGradeID gradeID }
                             if (updated) call.respond(HttpStatusCode.OK)
                             else call.respond(HttpStatusCode.NotModified)
