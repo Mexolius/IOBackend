@@ -84,7 +84,7 @@ fun Application.gradeRoutes() {
                         }
                     }
                 }
-                route("/many/${course_id}/${grade_id}"){
+                route("/grade/many/{$course_id}/{$grade_id}"){
                     post {
                         parameters(course_id, grade_id) { (courseID, gradeID) ->
                             val grades = call.receive<Map<String, Int>>()
