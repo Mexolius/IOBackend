@@ -2,6 +2,7 @@ package com.gumi.moodle.rest_controllers
 
 import com.gumi.moodle.course_id
 import com.gumi.moodle.dao.CourseDAO
+import com.gumi.moodle.dao.UserDAO
 import com.gumi.moodle.dao.atKey
 import com.gumi.moodle.dao.setTo
 import com.gumi.moodle.dao.withGradeID
@@ -26,6 +27,7 @@ class GradeController
 
 fun Application.gradeRoutes() {
     val dao: CourseDAO by inject()
+    val userDao: UserDAO by inject()
 
     routing {
         authenticate("basicAuth") {
@@ -108,8 +110,10 @@ fun Application.gradeRoutes() {
                                 Course::grades.posOp / Grade::studentPoints atKey studentID setTo grade
                             ) { Course::_id eq it withGradeID gradeID }
 
-                            if (updated) call.respond(HttpStatusCode.OK)
-                            else call.respond(HttpStatusCode.NotModified)
+                            if (updated) {
+                                createNotification(userDao, courseID, gradeID, studentID)
+                                call.respond(HttpStatusCode.OK)
+                            } else call.respond(HttpStatusCode.NotModified)
                         }
                     }
                 }
@@ -117,3 +121,5 @@ fun Application.gradeRoutes() {
         }
     }
 }
+
+

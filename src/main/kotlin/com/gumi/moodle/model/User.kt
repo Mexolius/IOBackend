@@ -16,6 +16,7 @@ data class User(
     var password: String = "",
     var salt: String = "",
     var roles: Set<Role> = setOf(Role.STUDENT),
+    var notifications: MutableSet<Notification> = mutableSetOf(),
 ) {
     @Transient
     private val digestFunction = getDigestFunction("SHA-256") { salt }

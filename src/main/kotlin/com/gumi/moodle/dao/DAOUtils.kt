@@ -19,5 +19,8 @@ infix fun <K, T> KProperty1<out Any?, Map<out K, T>?>.containsKey(key: K): Bson 
 infix fun <T> KProperty<T>.setTo(value: T): Bson =
     set(SetTo(this, value))
 
+infix fun Bson.and(value: Bson): Bson =
+    and(this, value)
+
 infix fun Bson.withGradeID(id: GradeID): Bson =
     and(this, Course::grades / Grade::_id eq id)
