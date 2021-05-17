@@ -1,15 +1,16 @@
 package com.gumi.moodle.rest_controllers
 
 import com.gumi.moodle.course_id
-import com.gumi.moodle.dao.*
+import com.gumi.moodle.dao.CourseDAO
+import com.gumi.moodle.dao.UserDAO
+import com.gumi.moodle.dao.atKey
 import com.gumi.moodle.dao.setTo
+import com.gumi.moodle.dao.withGradeID
 import com.gumi.moodle.grade_id
 import com.gumi.moodle.model.Course
 import com.gumi.moodle.model.Grade
-import com.gumi.moodle.model.Notification
 import com.gumi.moodle.model.Role.ADMIN
 import com.gumi.moodle.model.Role.TEACHER
-import com.gumi.moodle.model.User
 import com.gumi.moodle.user_id
 import com.gumi.moodle.withRole
 import io.ktor.application.*
@@ -106,17 +107,4 @@ fun Application.gradeRoutes() {
     }
 }
 
-private suspend fun createNotification(userDao: UserDAO, courseID: String, gradeID: String, studentID: String) {
-    val notification = Notification(courseID, gradeID, System.currentTimeMillis())
-
-    userDao.updateOne(
-        studentID,
-        pullByFilter(User::notifications, (Notification::courseID eq courseID) and (Notification::gradeID eq gradeID))
-    ) { User::_id eq it }
-
-    userDao.updateOne(
-        studentID,
-        push(User::notifications, notification)
-    ) { User::_id eq it }
-}
 
