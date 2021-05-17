@@ -6,6 +6,7 @@ import com.gumi.moodle.course_id
 import com.gumi.moodle.dao.CourseDAO
 import com.gumi.moodle.model.Course
 import com.gumi.moodle.model.CourseSerializer
+import com.gumi.moodle.model.CourseTeachersSerializer
 import com.gumi.moodle.model.Role.*
 import com.gumi.moodle.user_id
 import com.gumi.moodle.withRole
@@ -95,9 +96,9 @@ fun Application.courseRoutes() {
                                     dao.getOne(courseID) { Course::_id eq it }
 
                             course = course ?: return@parameters notFoundResponse()
-
+                            println(course.teacherNames)
                             if (isStudent) call.respond(CourseSerializer(userID), course)
-                            else call.respond(course)
+                            else call.respond(CourseTeachersSerializer, course)
                         }
                     }
                 }

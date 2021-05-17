@@ -2,7 +2,19 @@ package com.gumi.moodle.model
 
 import kotlinx.serialization.json.*
 
-class CourseSerializer(private val studentID: UserID) : JsonTransformingSerializer<Course>(Course.serializer()) {
+object CourseTeachersSerializer : JsonTransformingSerializer<Course>(Course.serializer()) {
+    override fun transformSerialize(element: JsonElement): JsonElement {
+        val teacherNames = "teacherNames"
+        val teachers = "teachers"
+        val newTeacherNames = element.jsonObject[teacherNames]?.jsonArray?.map { elem ->
+            JsonObject(elem.jsonObject.filterKeys { it == "_id" || it == "firstName" || it == "lastName" })
+        } ?: listOf()
+        val newElement = element.jsonObject.filterKeys { it != teachers && it != teacherNames }
+        return JsonObject(newElement + (teachers to JsonArray(newTeacherNames)))
+    }
+}
+
+class CourseSerializer(private val studentID: UserID) : JsonTransformingSerializer<Course>(CourseTeachersSerializer) {
     override fun transformSerialize(element: JsonElement): JsonElement {
         val students = "students"
         val isEnrolled = element.jsonObject[students]?.jsonArray?.contains(JsonPrimitive(studentID))

@@ -1,5 +1,6 @@
 package com.gumi.moodle.model
 
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 
 typealias CourseID = String
@@ -13,4 +14,5 @@ data class Course(
     var students: MutableSet<UserID> = mutableSetOf(),
     var teachers: MutableSet<UserID> = mutableSetOf(),
     var grades: MutableSet<Grade> = mutableSetOf(),
+    var teacherNames: Set<User> = mutableSetOf(),
 )
