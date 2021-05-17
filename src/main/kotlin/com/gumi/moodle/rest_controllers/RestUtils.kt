@@ -1,11 +1,21 @@
 package com.gumi.moodle.rest_controllers
 
+import com.gumi.moodle.dao.CourseDAO
+import com.gumi.moodle.dao.UserDAO
+import com.gumi.moodle.dao.and
+import com.gumi.moodle.model.Course
+import com.gumi.moodle.model.Grade
+import com.gumi.moodle.model.Notification
+import com.gumi.moodle.model.User
 import io.ktor.application.*
 import io.ktor.http.*
 import io.ktor.response.*
 import io.ktor.util.pipeline.*
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
+import org.litote.kmongo.eq
+import org.litote.kmongo.pullByFilter
+import org.litote.kmongo.push
 
 suspend inline fun PipelineContext<Unit, ApplicationCall>.wrongIDResponse() {
     call.respondText(
@@ -38,10 +48,32 @@ suspend inline fun PipelineContext<Unit, ApplicationCall>.malformedRouteResponse
 @ContextDsl
 suspend inline fun PipelineContext<Unit, ApplicationCall>.parameters(
     vararg names: String,
-    body: (List<String>) -> Unit
+    body: (List<String>) -> Unit,
+
 ) = body(names.map {
     call.parameters[it] ?: return malformedRouteResponse(it)
 })
 
+
 suspend inline fun <reified T : Any> ApplicationCall.respond(serializer: KSerializer<T>, value: T): Unit =
     this.respond(Json { encodeDefaults = true }.encodeToJsonElement(serializer, value))
+
+suspend fun createNotification(userDao: UserDAO, courseID: String, gradeID: String, studentID: String) {
+    val notification = Notification(courseID, gradeID, System.currentTimeMillis())
+
+    userDao.updateOne(
+        studentID,
+        pullByFilter(User::notifications, (Notification::courseID eq courseID) and (Notification::gradeID eq gradeID))
+    ) { User::_id eq it }
+
+    userDao.updateOne(
+        studentID,
+        push(User::notifications, notification)
+    ) { User::_id eq it }
+}
+
+suspend fun getGrade(dao: CourseDAO, courseID: String, gradeID: String): Grade? {
+    val course = dao.getOne(courseID) { Course::_id eq it } ?: return null
+    return course.grades.find { it._id == gradeID }
+}
+

@@ -96,6 +96,7 @@ fun Application.courseRoutes() {
                                     dao.getOne(courseID) { Course::_id eq it }
 
                             course = course ?: return@parameters notFoundResponse()
+
                             println(course.teacherNames)
                             if (isStudent) call.respond(CourseSerializer(userID), course)
                             else call.respond(CourseTeachersSerializer, course)

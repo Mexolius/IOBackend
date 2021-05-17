@@ -18,3 +18,6 @@ data class Grade(
 )
 
 enum class Aggregation { SUM, MEAN, MEDIAN }
+
+@Serializable
+data class Bucket(val from: Int, val to: Int, val number: Int)

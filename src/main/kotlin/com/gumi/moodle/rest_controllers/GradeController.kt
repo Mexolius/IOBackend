@@ -2,6 +2,7 @@ package com.gumi.moodle.rest_controllers
 
 import com.gumi.moodle.course_id
 import com.gumi.moodle.dao.CourseDAO
+import com.gumi.moodle.dao.UserDAO
 import com.gumi.moodle.dao.atKey
 import com.gumi.moodle.dao.setTo
 import com.gumi.moodle.dao.withGradeID
@@ -26,6 +27,7 @@ class GradeController
 
 fun Application.gradeRoutes() {
     val dao: CourseDAO by inject()
+    val userDao: UserDAO by inject()
 
     routing {
         authenticate("basicAuth") {
@@ -84,6 +86,21 @@ fun Application.gradeRoutes() {
                         }
                     }
                 }
+                route("/grade/many/{$course_id}/{$grade_id}"){
+                    post {
+                        parameters(course_id, grade_id) { (courseID, gradeID) ->
+                            val grades = call.receive<Map<String, Int>>()
+                            val updated = dao.updateOne(
+                                courseID,
+                                combine(grades.map {
+                                        (k, v) -> Course::grades.posOp / Grade::studentPoints atKey k setTo v
+                                })
+                            ) { Course::_id eq it withGradeID gradeID }
+                            if (updated) call.respond(HttpStatusCode.OK)
+                            else call.respond(HttpStatusCode.NotModified)
+                        }
+                    }
+                }
                 route("/grade/{$course_id}/{$grade_id}/{$user_id}") {
                     post {
                         parameters(course_id, grade_id, user_id) { (courseID, gradeID, studentID) ->
@@ -93,8 +110,10 @@ fun Application.gradeRoutes() {
                                 Course::grades.posOp / Grade::studentPoints atKey studentID setTo grade
                             ) { Course::_id eq it withGradeID gradeID }
 
-                            if (updated) call.respond(HttpStatusCode.OK)
-                            else call.respond(HttpStatusCode.NotModified)
+                            if (updated) {
+                                createNotification(userDao, courseID, gradeID, studentID)
+                                call.respond(HttpStatusCode.OK)
+                            } else call.respond(HttpStatusCode.NotModified)
                         }
                     }
                 }
@@ -102,3 +121,5 @@ fun Application.gradeRoutes() {
         }
     }
 }
+
+

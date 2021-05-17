@@ -2,11 +2,10 @@ package com.gumi.moodle
 
 import com.gumi.moodle.dao.CourseDAO
 import com.gumi.moodle.dao.UserDAO
-import com.gumi.moodle.model.Course
-import com.gumi.moodle.model.Grade
-import com.gumi.moodle.model.Role
-import com.gumi.moodle.model.User
+import com.gumi.moodle.dao.setTo
+import com.gumi.moodle.model.*
 import kotlinx.coroutines.runBlocking
+import org.litote.kmongo.eq
 import kotlin.random.Random
 
 
@@ -20,7 +19,7 @@ class Generator {
 
     suspend fun insertToDB() {
         var students = (1..20).map { newUser(it, isStudent = true, isTeacher = false) }
-        var teachers = (21..30).map { newUser(it, isStudent = false, isTeacher = true) }
+        var teachers = (1..10).map { newUser(it, isStudent = false, isTeacher = true) }
         val admin = User.createUserWithPlaintextInput(
             firstName = "aa",
             lastName = "bb",
@@ -30,21 +29,26 @@ class Generator {
         )
         userDAO.apply { drop() }.addAll(students + teachers + admin)
 
-        students = userDAO.getAll()
-            .filter { Role.STUDENT in it.roles } //redownloading from DB to have id fields not null - db autofills them
+        //redownloading from DB to have id fields not null - db autofills them
+        students = userDAO.getAll().filter { Role.STUDENT in it.roles }
         teachers = userDAO.getAll().filter { Role.TEACHER in it.roles }
         val courses = (1..10).map { newCourse(it, students, teachers) }
         courseDAO.apply { drop() }.addAll(courses)
+
+        courseDAO.getAll().forEach { addNotificationsToStudents(it, students) }
+
+        students.forEach { updateNotifications(it) } //couldn't find a way to do it in one update
     }
 
     private fun newUser(number: Int, isStudent: Boolean, isTeacher: Boolean): User {
         val roles = mutableSetOf<Role>()
         if (isStudent) roles.add(Role.STUDENT)
         if (isTeacher) roles.add(Role.TEACHER)
+        val roleName = if (isStudent) "student" else "teacher"
         return User.createUserWithPlaintextInput(
-            firstName = "firstname$number",
-            lastName = "lastname$number",
-            email = "email$number@aa.aa",
+            firstName = "firstname_$roleName$number",
+            lastName = "lastname_$roleName$number",
+            email = "$roleName$number@aa.aa",
             password = "aa",
             roles = roles
         )
@@ -115,12 +119,35 @@ class Generator {
     }
 
     private fun assignGrades(grade: Grade, students: List<User>) {
-        students.filter { Random.nextBoolean() }
+        if (Random.nextInt(4) == 0) { // 1/4 chance of not adding any grades (i.e teacher specified for later)
+            return
+        }
+
+        students.filter { Random.nextInt(4) != 0 }  // 3/4 chance of student having grade added
             .forEach { grade.studentPoints[it._id!!] = Random.nextInt(grade.maxPoints) }
     }
 
     private fun newGrade(number: Int, isLeaf: Boolean): Grade {
         return Grade("grade$number", "grade$number", isLeaf, 0, Random.nextInt(1, 100))
+    }
+
+    private fun addNotificationsToStudents(course: Course, students: List<User>) {
+        val now = System.currentTimeMillis()
+        val studentMap = students.associateBy { it._id }
+        val notificationsMap = course.grades
+            .map { g -> g.studentPoints.keys.associateWith { Notification(course._id as String, g._id, now) } }
+            .flatMap { it.entries }
+            .groupBy { it.key }
+            .mapValues { entry -> entry.value.map { it.value } }
+
+        notificationsMap.forEach { studentMap[it.key]?.notifications?.addAll(it.value) }
+    }
+
+    private suspend fun updateNotifications(s: User) {
+        userDAO.updateOne(
+            s._id as String,
+            User::notifications setTo s.notifications
+        ) { User::_id eq it }
     }
 
     private fun <T> getRandomElement(list: List<T>): T {
