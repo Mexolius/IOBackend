@@ -19,7 +19,7 @@ class Generator {
 
     suspend fun insertToDB() {
         var students = (1..20).map { newUser(it, isStudent = true, isTeacher = false) }
-        var teachers = (21..30).map { newUser(it, isStudent = false, isTeacher = true) }
+        var teachers = (1..10).map { newUser(it, isStudent = false, isTeacher = true) }
         val admin = User.createUserWithPlaintextInput(
             firstName = "aa",
             lastName = "bb",
@@ -44,10 +44,11 @@ class Generator {
         val roles = mutableSetOf<Role>()
         if (isStudent) roles.add(Role.STUDENT)
         if (isTeacher) roles.add(Role.TEACHER)
+        val roleName = if (isStudent) "student" else "teacher"
         return User.createUserWithPlaintextInput(
-            firstName = "firstname$number",
-            lastName = "lastname$number",
-            email = "email$number@aa.aa",
+            firstName = "firstname_$roleName$number",
+            lastName = "lastname_$roleName$number",
+            email = "$roleName$number@aa.aa",
             password = "aa",
             roles = roles
         )
@@ -118,7 +119,11 @@ class Generator {
     }
 
     private fun assignGrades(grade: Grade, students: List<User>) {
-        students.filter { Random.nextBoolean() }
+        if (Random.nextInt(4) == 0) { // 1/4 chance of not adding any grades (i.e teacher specified for later)
+            return
+        }
+
+        students.filter { Random.nextInt(4) != 0 }  // 3/4 chance of student having grade added
             .forEach { grade.studentPoints[it._id!!] = Random.nextInt(grade.maxPoints) }
     }
 
