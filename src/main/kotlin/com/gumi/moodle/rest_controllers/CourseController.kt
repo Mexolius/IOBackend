@@ -53,8 +53,11 @@ fun Application.courseRoutes() {
                     post {
                         parameters(course_id) { (courseID) ->
                             val userEmail = call.receive<String>()
-                            val user = userDAO.getOne(userEmail) ?: return@post notFoundResponse()
-                            val list = if (user.roles.contains(STUDENT)) Course::students else Course::teachers
+                            val user = userDAO.getOne(userEmail)
+                                ?: return@post notFoundResponse()
+                            val list =
+                                if (user.roles.contains(STUDENT)) Course::students
+                                else Course::teachers
                             val updated = courseDAO.updateOne(
                                 courseID,
                                 addToSet(list, user._id)

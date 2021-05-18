@@ -90,7 +90,8 @@ class Generator {
 
     private fun chooseParentsToHaveChildrenAdded(parentGrades: List<Grade>, leafGrades: List<Grade>): List<Grade> {
         val parentToChildrenMap = parentGrades.associate { it._id to Pair(it, mutableListOf<Grade>()) }
-        (parentGrades + leafGrades).filter { it.parentID != null }.forEach { parentToChildrenMap[it.parentID]!!.second.add(it) }
+        (parentGrades + leafGrades).filter { it.parentID != null }
+            .forEach { parentToChildrenMap[it.parentID]!!.second.add(it) }
 
         val withChildren = parentToChildrenMap.filter { it.value.second.size != 0 }.values.map { it.first }
         val withoutChildren = parentToChildrenMap.filter { it.value.second.size == 0 }.values.map { it.first }
@@ -125,7 +126,8 @@ class Generator {
     ) {
         val initialParents = parentGrades.toMutableList()
         leafGrades.forEach {
-            val parent = if (initialParents.isNotEmpty()) initialParents.removeLast() else getRandomElement(parentGrades)
+            val parent =
+                if (initialParents.isNotEmpty()) initialParents.removeLast() else getRandomElement(parentGrades)
             it.parentID = parent._id
             it.level = parent.level + 1
         }
