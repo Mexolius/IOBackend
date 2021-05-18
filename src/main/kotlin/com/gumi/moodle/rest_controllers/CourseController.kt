@@ -49,14 +49,15 @@ fun Application.courseRoutes() {
                         call.respond(HttpStatusCode.OK)
                     }
                 }
-                route("/course/assign-teacher/{$course_id}") {
-                    put {
+                route("/course/enroll-by-email/{$course_id}") {
+                    post {
                         parameters(course_id) { (courseID) ->
-                            val teacherEmail = call.receive<String>()
-                            val teacher = userDAO.getOne(teacherEmail) ?: return@put notFoundResponse()
+                            val userEmail = call.receive<String>()
+                            val user = userDAO.getOne(userEmail) ?: return@post notFoundResponse()
+                            val list = if (user.roles.contains(STUDENT)) Course::students else Course::teachers
                             val updated = courseDAO.updateOne(
                                 courseID,
-                                addToSet(Course::teachers, teacher._id)
+                                addToSet(list, user._id)
                             ) { Course::_id eq it }
 
                             if (updated) call.respond(HttpStatusCode.OK)
@@ -66,8 +67,8 @@ fun Application.courseRoutes() {
                 }
             }
             withRole(ADMIN, TEACHER, STUDENT) {
-                route("/course/enroll-student/{$course_id}") {
-                    put {
+                route("/course/enroll-by-id/{$course_id}") {
+                    post {
                         parameters(course_id) { (courseID) ->
                             val studentID = call.receive<String>()
                             val updated = courseDAO.updateOne(
