@@ -80,10 +80,22 @@ class Generator {
 
         assignParentsToParents(parentGrades, 3)
 
-        addParentsToLeaves(leafGrades, parentGrades)
+        val parentsToHaveChildrenAdded = chooseParentsToHaveChildrenAdded(parentGrades, leafGrades)
+
+        addParentsToLeaves(leafGrades, parentsToHaveChildrenAdded)
 
         val grades = parentGrades + leafGrades + loneGrades
         return grades.toMutableSet()
+    }
+
+    private fun chooseParentsToHaveChildrenAdded(parentGrades: List<Grade>, leafGrades: List<Grade>): List<Grade> {
+        val parentToChildrenMap = parentGrades.associate { it._id to Pair(it, mutableListOf<Grade>()) }
+        (parentGrades + leafGrades).filter { it.parentID != null }.forEach { parentToChildrenMap[it.parentID]!!.second.add(it) }
+
+        val withChildren = parentToChildrenMap.filter { it.value.second.size != 0 }.values.map { it.first }
+        val withoutChildren = parentToChildrenMap.filter { it.value.second.size == 0 }.values.map { it.first }
+
+        return withoutChildren + getRandomSublist(withChildren, withChildren.size / 2)
     }
 
     private fun assignParentsToParents(parentGrades: List<Grade>, avgChildren: Int) {
@@ -111,8 +123,9 @@ class Generator {
         leafGrades: List<Grade>,
         parentGrades: List<Grade>,
     ) {
+        val initialParents = parentGrades.toMutableList()
         leafGrades.forEach {
-            val parent = getRandomElement(parentGrades)
+            val parent = if (initialParents.isNotEmpty()) initialParents.removeLast() else getRandomElement(parentGrades)
             it.parentID = parent._id
             it.level = parent.level + 1
         }
