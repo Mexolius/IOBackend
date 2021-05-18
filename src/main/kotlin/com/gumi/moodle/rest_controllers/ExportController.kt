@@ -31,7 +31,7 @@ fun Application.exportRoutes() {
                     get {
                         parameters(course_id, format) { (courseID, format) ->
                             val course =
-                                courseDao.getOne(courseID) { Course::_id eq it } ?: return@parameters notFoundResponse()
+                                courseDao.getOne(courseID) { Course::_id eq it } ?: return@get notFoundResponse()
                             val studentsInCourse = dao.getAll(User::_id `in` course.students)
 
                             val exporter = Exporter(course, studentsInCourse)
@@ -39,7 +39,7 @@ fun Application.exportRoutes() {
                             val byteArray: ByteArray = when (format) {
                                 "csv", "CSV" -> exporter.exportCSV()
                                 "xls", "XLS", "xlsx", "XLSX" -> exporter.exportXLS()
-                                else -> return@parameters wrongIDResponse()
+                                else -> return@get wrongIDResponse()
                             }
 
                             call.respondBytes(byteArray)

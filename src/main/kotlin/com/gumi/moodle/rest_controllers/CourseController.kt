@@ -4,6 +4,7 @@ import com.gumi.moodle.IDField.ID
 import com.gumi.moodle.UserSession
 import com.gumi.moodle.course_id
 import com.gumi.moodle.dao.CourseDAO
+import com.gumi.moodle.dao.UserDAO
 import com.gumi.moodle.model.Course
 import com.gumi.moodle.model.CourseSerializer
 import com.gumi.moodle.model.CourseTeachersSerializer
@@ -18,21 +19,22 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import kotlinx.serialization.builtins.ListSerializer
 import org.koin.ktor.ext.inject
+import org.litote.kmongo.addToSet
 import org.litote.kmongo.contains
 import org.litote.kmongo.eq
-import org.litote.kmongo.push
 
 
 class CourseController
 
 fun Application.courseRoutes() {
-    val dao: CourseDAO by inject()
+    val courseDAO: CourseDAO by inject()
+    val userDAO: UserDAO by inject()
 
     routing {
         authenticate("basicAuth") {
             route("/courses") {
                 get {
-                    val courses = dao.getAll()
+                    val courses = courseDAO.getAll()
 
                     call.respond(courses)
                 }
@@ -41,21 +43,40 @@ fun Application.courseRoutes() {
                 route("/course") {
                     post {
                         val course = call.receive<Course>()
-                        if (dao.exists(course)) return@post duplicateCourseNameResponse()
-                        dao.add(course)
+                        if (courseDAO.exists(course)) return@post duplicateCourseNameResponse()
+                        courseDAO.add(course)
 
                         call.respond(HttpStatusCode.OK)
                     }
                 }
-            }
-            withRole(ADMIN, TEACHER, STUDENT) {
-                route("/course/enroll/{$course_id}") {
+                route("/course/enroll-by-email/{$course_id}") {
                     post {
                         parameters(course_id) { (courseID) ->
-                            val student = call.receive<String>()
-                            val updated = dao.updateOne(
+                            val userEmail = call.receive<String>()
+                            val user = userDAO.getOne(userEmail)
+                                ?: return@post notFoundResponse()
+                            val list =
+                                if (user.roles.contains(STUDENT)) Course::students
+                                else Course::teachers
+                            val updated = courseDAO.updateOne(
                                 courseID,
-                                push(Course::students, student)
+                                addToSet(list, user._id)
+                            ) { Course::_id eq it }
+
+                            if (updated) call.respond(HttpStatusCode.OK)
+                            else call.respond(HttpStatusCode.NotModified)
+                        }
+                    }
+                }
+            }
+            withRole(ADMIN, TEACHER, STUDENT) {
+                route("/course/enroll-by-id/{$course_id}") {
+                    post {
+                        parameters(course_id) { (courseID) ->
+                            val studentID = call.receive<String>()
+                            val updated = courseDAO.updateOne(
+                                courseID,
+                                addToSet(Course::students, studentID)
                             ) { Course::_id eq it }
 
                             if (updated) call.respond(HttpStatusCode.OK)
@@ -68,7 +89,7 @@ fun Application.courseRoutes() {
                 route("/courses/of-student/{$user_id}") {
                     get {
                         parameters(user_id) { (id) ->
-                            val courses = dao.getAll(Course::students contains id, studentID = id)
+                            val courses = courseDAO.getAll(Course::students contains id, studentID = id)
                             call.respond(ListSerializer(CourseSerializer(id)), courses)
                         }
                     }
@@ -78,7 +99,7 @@ fun Application.courseRoutes() {
                 route("/courses/of-teacher/{$user_id}") {
                     get {
                         parameters(user_id) { (id) ->
-                            val courses = dao.getAll(Course::teachers contains id)
+                            val courses = courseDAO.getAll(Course::teachers contains id)
                             call.respond(courses)
                         }
                     }
@@ -91,11 +112,11 @@ fun Application.courseRoutes() {
                             val isStudent = STUDENT in (call.principal<Principal>() as UserSession).roles
                             var course =
                                 if (isStudent)
-                                    dao.getOne(courseID, studentID = userID) { Course::_id eq it }
+                                    courseDAO.getOne(courseID, studentID = userID) { Course::_id eq it }
                                 else
-                                    dao.getOne(courseID) { Course::_id eq it }
+                                    courseDAO.getOne(courseID) { Course::_id eq it }
 
-                            course = course ?: return@parameters notFoundResponse()
+                            course = course ?: return@get notFoundResponse()
 
                             if (isStudent) call.respond(CourseSerializer(userID), course)
                             else call.respond(CourseTeachersSerializer, course)

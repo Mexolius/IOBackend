@@ -46,9 +46,9 @@ fun Application.userRoutes() {
             withRole(ADMIN, idField = EMAIL()) {
                 route("/user/{$email}") {
                     get {
-                        parameters(email) { (email) ->
-                            val user = dao.getOne(email)
-                                ?: return@parameters notFoundResponse()
+                        parameters(email) { (userEmail) ->
+                            val user = dao.getOne(userEmail)
+                                ?: return@get notFoundResponse()
                             call.respond(UserSerializer, user)
                         }
                     }
@@ -59,7 +59,7 @@ fun Application.userRoutes() {
                     get {
                         parameters(user_id) { (userID) ->
                             val user = dao.getOne(userID, includeNotifications = true) { User::_id eq it }
-                                ?: return@parameters notFoundResponse()
+                                ?: return@get notFoundResponse()
                             call.respond(user.notifications)
                         }
                     }
