@@ -97,7 +97,6 @@ fun Application.courseRoutes() {
 
                             course = course ?: return@parameters notFoundResponse()
 
-                            println(course.teacherNames)
                             if (isStudent) call.respond(CourseSerializer(userID), course)
                             else call.respond(CourseTeachersSerializer, course)
                         }

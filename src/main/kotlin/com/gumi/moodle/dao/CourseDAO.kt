@@ -63,4 +63,7 @@ class CourseDAO(mongoURI: String = MONGO_URI) : AbstractDAO<Course, String>(mong
         Course::grades / Grade::isLeaf,
         Course::grades / Grade::studentPoints atKey studentID,
     )
+
+    suspend fun getGrade(courseID: String, gradeID: String): Grade? =
+        getOne(courseID) { Course::_id eq it }?.grades?.find { it._id == gradeID }
 }

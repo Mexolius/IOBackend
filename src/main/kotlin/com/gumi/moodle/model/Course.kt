@@ -1,6 +1,5 @@
 package com.gumi.moodle.model
 
-import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 
 typealias CourseID = String

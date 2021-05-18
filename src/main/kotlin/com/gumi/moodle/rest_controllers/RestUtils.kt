@@ -1,10 +1,7 @@
 package com.gumi.moodle.rest_controllers
 
-import com.gumi.moodle.dao.CourseDAO
 import com.gumi.moodle.dao.UserDAO
 import com.gumi.moodle.dao.and
-import com.gumi.moodle.model.Course
-import com.gumi.moodle.model.Grade
 import com.gumi.moodle.model.Notification
 import com.gumi.moodle.model.User
 import io.ktor.application.*
@@ -50,10 +47,9 @@ suspend inline fun PipelineContext<Unit, ApplicationCall>.parameters(
     vararg names: String,
     body: (List<String>) -> Unit,
 
-) = body(names.map {
+    ) = body(names.map {
     call.parameters[it] ?: return malformedRouteResponse(it)
 })
-
 
 suspend inline fun <reified T : Any> ApplicationCall.respond(serializer: KSerializer<T>, value: T): Unit =
     this.respond(Json { encodeDefaults = true }.encodeToJsonElement(serializer, value))
@@ -72,8 +68,5 @@ suspend fun createNotification(userDao: UserDAO, courseID: String, gradeID: Stri
     ) { User::_id eq it }
 }
 
-suspend fun getGrade(dao: CourseDAO, courseID: String, gradeID: String): Grade? {
-    val course = dao.getOne(courseID) { Course::_id eq it } ?: return null
-    return course.grades.find { it._id == gradeID }
-}
+
 

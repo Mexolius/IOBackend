@@ -67,7 +67,8 @@ fun Application.userRoutes() {
                 route("/notifications/user/{$user_id}/clear") {
                     post {
                         parameters(user_id) { (userID) ->
-                            val updated = dao.updateOne(userID, User::notifications setTo mutableSetOf()) { User::_id eq it }
+                            val updated =
+                                dao.updateOne(userID, User::notifications setTo mutableSetOf()) { User::_id eq it }
 
                             if (updated) call.respond(HttpStatusCode.OK)
                             else call.respond(HttpStatusCode.NotModified)

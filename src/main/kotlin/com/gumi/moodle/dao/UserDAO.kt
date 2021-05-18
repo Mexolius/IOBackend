@@ -45,7 +45,10 @@ class UserDAO(mongoURI: String = MONGO_URI) : AbstractDAO<User, String>(mongoURI
             .first()
 
 
-    private fun CoroutineFindPublisher<User>.applyExcludes(includeCrypto: Boolean, includeNotifications: Boolean): CoroutineFindPublisher<User> {
+    private fun CoroutineFindPublisher<User>.applyExcludes(
+        includeCrypto: Boolean,
+        includeNotifications: Boolean
+    ): CoroutineFindPublisher<User> {
         val fields = mutableListOf<KProperty<*>>()
         if (!includeCrypto) fields.addAll(listOf(User::password, User::salt))
         if (!includeNotifications) fields.add(User::notifications)
