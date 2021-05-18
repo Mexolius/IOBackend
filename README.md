@@ -33,3 +33,4 @@ Short description of all REST API endpoints. Order is the same as in code.
 | `/histogram/grades/{$course_id}/{$grade_id}`                      | get          | admin, teacher, student, matched by id | returns sorted list of points                               | list of integers                                        |
 | `/histogram/buckets/{$buckets}/{$course_id}/{$grade_id}`          | get          | admin, teacher, student, matched by id | returns list of buckets of approx. length of {buckets}      | list of [bucket](/misc/exampleBucket.json)              |
 | `/histogram/bucketsWithEmpty/{$buckets}/{$course_id}/{$grade_id}` | get          | admin, teacher, student, matched by id | same as above, but includes empty buckets                   | list of [bucket](/misc/exampleBucket.json)              |
+

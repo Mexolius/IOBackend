@@ -7,6 +7,7 @@ import com.gumi.moodle.email
 import com.gumi.moodle.model.Role.ADMIN
 import com.gumi.moodle.model.Role.STUDENT
 import com.gumi.moodle.model.User
+import com.gumi.moodle.model.UserSerializer
 import com.gumi.moodle.user_id
 import com.gumi.moodle.withRole
 import io.ktor.application.*
@@ -48,7 +49,7 @@ fun Application.userRoutes() {
                         parameters(email) { (email) ->
                             val user = dao.getOne(email)
                                 ?: return@parameters notFoundResponse()
-                            call.respond(user)
+                            call.respond(UserSerializer, user)
                         }
                     }
                 }
@@ -66,7 +67,8 @@ fun Application.userRoutes() {
                 route("/notifications/user/{$user_id}/clear") {
                     post {
                         parameters(user_id) { (userID) ->
-                            val updated = dao.updateOne(userID, User::notifications setTo mutableSetOf()) { User::_id eq it }
+                            val updated =
+                                dao.updateOne(userID, User::notifications setTo mutableSetOf()) { User::_id eq it }
 
                             if (updated) call.respond(HttpStatusCode.OK)
                             else call.respond(HttpStatusCode.NotModified)

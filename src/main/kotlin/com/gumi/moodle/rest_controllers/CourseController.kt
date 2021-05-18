@@ -5,6 +5,8 @@ import com.gumi.moodle.UserSession
 import com.gumi.moodle.course_id
 import com.gumi.moodle.dao.CourseDAO
 import com.gumi.moodle.model.Course
+import com.gumi.moodle.model.CourseSerializer
+import com.gumi.moodle.model.CourseTeachersSerializer
 import com.gumi.moodle.model.Role.*
 import com.gumi.moodle.user_id
 import com.gumi.moodle.withRole
@@ -14,6 +16,7 @@ import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import kotlinx.serialization.builtins.ListSerializer
 import org.koin.ktor.ext.inject
 import org.litote.kmongo.contains
 import org.litote.kmongo.eq
@@ -66,7 +69,7 @@ fun Application.courseRoutes() {
                     get {
                         parameters(user_id) { (id) ->
                             val courses = dao.getAll(Course::students contains id, studentID = id)
-                            call.respond(courses)
+                            call.respond(ListSerializer(CourseSerializer(id)), courses)
                         }
                     }
                 }
@@ -85,17 +88,17 @@ fun Application.courseRoutes() {
                 route("/courses/{$user_id}/{$course_id}") {
                     get {
                         parameters(user_id, course_id) { (userID, courseID) ->
+                            val isStudent = STUDENT in (call.principal<Principal>() as UserSession).roles
                             var course =
-                                if (STUDENT in (call.principal<Principal>() as UserSession).roles)
+                                if (isStudent)
                                     dao.getOne(courseID, studentID = userID) { Course::_id eq it }
                                 else
                                     dao.getOne(courseID) { Course::_id eq it }
 
                             course = course ?: return@parameters notFoundResponse()
-                            course.isEnrolled = course.students.contains(userID)
-                            course.students = mutableSetOf()
 
-                            call.respond(course)
+                            if (isStudent) call.respond(CourseSerializer(userID), course)
+                            else call.respond(CourseTeachersSerializer, course)
                         }
                     }
                 }

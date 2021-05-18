@@ -92,5 +92,5 @@ fun Application.module(testing: Boolean = false) {
         histogramRoutes()
     }
 
-    if (!testing) runBlocking { migrations() } //to be fixed
+    if (!testing) runBlocking { migrations() }
 }

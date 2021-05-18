@@ -15,9 +15,6 @@ abstract class AbstractDAO<T : Any, U>(mongoURI: String, protected val defaultQu
     protected abstract fun getCollection(): CoroutineCollection<T>
     abstract suspend fun exists(obj: T): Boolean
 
-    open suspend fun getAll(query: Bson = EMPTY_BSON): List<T> =
-        getCollection().find(query).toList()
-
     suspend fun add(obj: T): Boolean =
         if (exists(obj)) false
         else getCollection().insertOne(obj).wasAcknowledged()
@@ -25,7 +22,10 @@ abstract class AbstractDAO<T : Any, U>(mongoURI: String, protected val defaultQu
     suspend fun addAll(obj: List<T>): Boolean =
         getCollection().insertMany(obj).wasAcknowledged()
 
-    suspend fun getOne(
+    open suspend fun getAll(query: Bson = EMPTY_BSON): List<T> =
+        getCollection().find(query).toList()
+
+    open suspend fun getOne(
         value: U,
         queryCreator: (U) -> Bson = defaultQueryCreator
     ): T? =

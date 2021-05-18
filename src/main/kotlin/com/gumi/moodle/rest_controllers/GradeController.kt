@@ -86,14 +86,14 @@ fun Application.gradeRoutes() {
                         }
                     }
                 }
-                route("/grade/many/{$course_id}/{$grade_id}"){
+                route("/grade/many/{$course_id}/{$grade_id}") {
                     post {
                         parameters(course_id, grade_id) { (courseID, gradeID) ->
                             val grades = call.receive<Map<String, Int>>()
                             val updated = dao.updateOne(
                                 courseID,
-                                combine(grades.map {
-                                        (k, v) -> Course::grades.posOp / Grade::studentPoints atKey k setTo v
+                                combine(grades.map { (k, v) ->
+                                    Course::grades.posOp / Grade::studentPoints atKey k setTo v
                                 })
                             ) { Course::_id eq it withGradeID gradeID }
                             if (updated) call.respond(HttpStatusCode.OK)

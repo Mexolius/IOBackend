@@ -22,14 +22,29 @@ class CourseDAO(mongoURI: String = MONGO_URI) : AbstractDAO<Course, String>(mong
             .projection(studentProjection(studentID))
             .toList()
 
+    override suspend fun getOne(
+        value: String,
+        queryCreator: (String) -> Bson
+    ): Course? =
+        getCollection().aggregate<Course>(
+            listOf(
+                match(queryCreator(value)),
+                lookup(from = "User", localField = "teachers", foreignField = "_id", newAs = "teacherNames")
+            )
+        ).first()
+
     suspend fun getOne(
         value: String,
         studentID: UserID,
         queryCreator: (String) -> Bson = defaultQueryCreator
     ): Course? =
-        getCollection().find(queryCreator(value))
-            .projection(studentProjection(studentID))
-            .first()
+        getCollection().aggregate<Course>(
+            listOf(
+                match(queryCreator(value)),
+                lookup(from = "User", localField = "teachers", foreignField = "_id", newAs = "teacherNames"),
+                project(studentProjection(studentID))
+            )
+        ).first()
 
     private fun studentProjection(studentID: UserID): Bson = include(
         Course::_id,
@@ -38,6 +53,7 @@ class CourseDAO(mongoURI: String = MONGO_URI) : AbstractDAO<Course, String>(mong
         Course::studentLimit,
         Course::students,
         Course::teachers,
+        Course::teacherNames,
         Course::grades / Grade::_id,
         Course::grades / Grade::name,
         Course::grades / Grade::level,
@@ -47,4 +63,7 @@ class CourseDAO(mongoURI: String = MONGO_URI) : AbstractDAO<Course, String>(mong
         Course::grades / Grade::isLeaf,
         Course::grades / Grade::studentPoints atKey studentID,
     )
+
+    suspend fun getGrade(courseID: String, gradeID: String): Grade? =
+        getOne(courseID) { Course::_id eq it }?.grades?.find { it._id == gradeID }
 }

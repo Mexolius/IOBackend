@@ -1,0 +1,36 @@
+{
+  "_id": null,
+  "name": "course1",
+  "description": "an example course",
+  "studentLimit": 100,
+  "isEnrolled": false,
+  "students": [
+    "student_id1",
+    "student_id2"
+  ],
+  "teachers": [
+    {
+      "_id": "teacher_id1",
+      "firstName": "teacher",
+      "lastName": "id1"
+    }
+  ],
+  "grades": [
+    {
+      "_id": "id1",
+      "name": "kolos1",
+      "level": 0,
+      "maxPoints": 60,
+      "studentPoints": {
+        "student_id1": 30
+      },
+      "thresholds": [
+        0.1,
+        0.7,
+        1.0
+      ],
+      "parentID": null,
+      "isLeaf": true
+    }
+  ]
+}
