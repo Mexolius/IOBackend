@@ -23,7 +23,7 @@ fun Application.histogramRoutes() {
                 route("/histogram/grades/{$course_id}/{$grade_id}") {
                     get {
                         parameters(course_id, grade_id) { (courseID, gradeID) ->
-                            val grade = dao.getGrade(courseID, gradeID) ?: return@parameters notFoundResponse()
+                            val grade = dao.getGrade(courseID, gradeID) ?: return@get notFoundResponse()
 
                             val studentPoints = grade.studentPoints.values.sorted()
 
@@ -34,7 +34,7 @@ fun Application.histogramRoutes() {
                 route("/histogram/buckets/{$buckets}/{$course_id}/{$grade_id}") {
                     get {
                         parameters(course_id, grade_id, buckets) { (courseID, gradeID, buckets) ->
-                            val grade = dao.getGrade(courseID, gradeID) ?: return@parameters notFoundResponse()
+                            val grade = dao.getGrade(courseID, gradeID) ?: return@get notFoundResponse()
 
                             val bucketRange = grade.maxPoints / buckets.toInt()
 
@@ -51,7 +51,7 @@ fun Application.histogramRoutes() {
                 route("/histogram/bucketsWithEmpty/{$buckets}/{$course_id}/{$grade_id}") {
                     get {
                         parameters(course_id, grade_id, buckets) { (courseID, gradeID, buckets) ->
-                            val grade = dao.getGrade(courseID, gradeID) ?: return@parameters notFoundResponse()
+                            val grade = dao.getGrade(courseID, gradeID) ?: return@get notFoundResponse()
 
                             val bucketRange = grade.maxPoints / buckets.toInt()
 
