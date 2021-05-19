@@ -42,27 +42,12 @@ dependencies {
     testImplementation("io.ktor:ktor-server-tests:$ktorVersion")
 }
 
-tasks.register<Jar>("fatJar") {
-    archiveClassifier.set("fat")
-    destinationDirectory.set(file("$rootDir/build/distributions"))
-
-    group = "distribution"
-
-    from(sourceSets.main.get().output)
-
-    manifest {
-        attributes(
-            "Main-Class" to application.mainClass,
-            "Implementation-Version" to archiveVersion
-        )
+tasks.jar {
+    manifest{
+            attributes["Main-Class"] = application.mainClass
+            attributes["Implementation-Version"] = archiveVersion
+            attributes["Class-Path"] = configurations.runtimeClasspath.get().files.joinToString(" "){
+                it.name
+            }
     }
-
-    dependsOn(configurations.runtimeClasspath, "check", "test")
-    from({
-        configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) }
-    })
-}
-
-tasks.assembleDist {
-    dependsOn("fatJar")
 }
