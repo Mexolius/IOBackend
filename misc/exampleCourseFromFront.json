@@ -3,7 +3,6 @@
   "name": "course1",
   "description": "an example course",
   "studentLimit": 100,
-  "isEnrolled": false,
   "students": [
     "student_id1",
     "student_id2"
