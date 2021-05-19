@@ -14,4 +14,5 @@ data class Course(
     var teachers: MutableSet<UserID> = mutableSetOf(),
     var grades: MutableSet<Grade> = mutableSetOf(),
     var teacherNames: Set<User> = mutableSetOf(),
+    var studentNames: Set<User> = mutableSetOf(),
 )

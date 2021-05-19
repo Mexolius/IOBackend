@@ -22,29 +22,24 @@ class CourseDAO(mongoURI: String = MONGO_URI) : AbstractDAO<Course, String>(mong
             .projection(studentProjection(studentID))
             .toList()
 
-    override suspend fun getOne(
-        value: String,
-        queryCreator: (String) -> Bson
-    ): Course? =
-        getCollection().aggregate<Course>(
-            listOf(
-                match(queryCreator(value)),
-                lookup(from = "User", localField = "teachers", foreignField = "_id", newAs = "teacherNames")
-            )
-        ).first()
+    override suspend fun getOne(value: String, queryCreator: (String) -> Bson): Course? =
+        getOne(value, "", queryCreator)
 
     suspend fun getOne(
         value: String,
         studentID: UserID,
         queryCreator: (String) -> Bson = defaultQueryCreator
     ): Course? =
-        getCollection().aggregate<Course>(
-            listOf(
-                match(queryCreator(value)),
-                lookup(from = "User", localField = "teachers", foreignField = "_id", newAs = "teacherNames"),
-                project(studentProjection(studentID))
-            )
-        ).first()
+        getCollection().aggregate<Course>(pipeline(queryCreator(value), studentID)).first()
+
+    private fun pipeline(query: Bson, studentID: UserID = ""): List<Bson> {
+        val pipeline = listOf(
+            match(query),
+            lookup(from = "User", localField = "teachers", foreignField = "_id", newAs = "teacherNames"),
+            lookup(from = "User", localField = "students", foreignField = "_id", newAs = "studentNames"),
+        )
+        return if (studentID.isNotEmpty()) pipeline + project(studentProjection(studentID)) else pipeline
+    }
 
     private fun studentProjection(studentID: UserID): Bson = include(
         Course::_id,
@@ -54,6 +49,7 @@ class CourseDAO(mongoURI: String = MONGO_URI) : AbstractDAO<Course, String>(mong
         Course::students,
         Course::teachers,
         Course::teacherNames,
+        Course::studentNames,
         Course::grades / Grade::_id,
         Course::grades / Grade::name,
         Course::grades / Grade::level,
