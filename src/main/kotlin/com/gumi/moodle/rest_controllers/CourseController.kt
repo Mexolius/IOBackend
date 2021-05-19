@@ -52,7 +52,7 @@ fun Application.courseRoutes() {
                 route("/course/enroll-by-email/{$course_id}") {
                     post {
                         parameters(course_id) { (courseID) ->
-                            val userEmail = call.receive<String>()
+                            val userEmail = call.receive<String>().removeSurrounding("\"")
                             val user = userDAO.getOne(userEmail)
                                 ?: return@post notFoundResponse()
                             val list =
