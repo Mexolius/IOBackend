@@ -6,3 +6,4 @@ build
 
 # Ignore Intellij project settings
 .idea
+export.csv
