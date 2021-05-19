@@ -1,0 +1,53 @@
+# This workflow will build a Java project with Gradle
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
+
+name: Create release
+
+on: 
+  push:
+    tags:
+      - 'v**'
+
+jobs:
+  make-artifact:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK 11
+      uses: actions/setup-java@v2
+      with:
+        java-version: '11'
+        distribution: 'adopt'
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+    - name: Create installation libs
+      run: ./gradlew installDist
+    - name: Bundle the release artifact
+      run: |
+        mkdir -p build/dist
+        cd build/dist
+        cp -rf ../install/gumi-moodle-backend/lib ../../scripts/* .
+        zip -r gumi-moodle-backend *
+        cd ../..
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v2.2.3
+      with:
+        name: zipDist
+        path: build/dist/gumi-moodle-backend.zip
+  publish-release:
+    runs-on: ubuntu-latest
+    needs: make-artifact
+    steps:
+    - uses: actions/checkout@v2
+    - name: Download built archive
+      uses: actions/download-artifact@v2.0.9
+      with:
+        name: zipDist
+        path: .
+    - name: Create release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: gumi-moodle-backend.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
