@@ -16,7 +16,6 @@ import io.ktor.routing.*
 import org.koin.ktor.ext.inject
 import org.litote.kmongo.`in`
 import org.litote.kmongo.eq
-import java.net.http.HttpHeaders
 
 
 class ExportController
@@ -43,7 +42,11 @@ fun Application.exportRoutes() {
                                 else -> return@get wrongIDResponse()
                             }
 
-                            call.response.headers.append(io.ktor.http.HttpHeaders.ContentDisposition,"attachment; filename="+course.name+'.'+format, false)
+                            call.response.headers.append(
+                                io.ktor.http.HttpHeaders.ContentDisposition,
+                                "attachment; filename=" + course.name + '.' + format,
+                                false
+                            )
 
                             call.respondBytes(byteArray)
                         }
