@@ -5,6 +5,7 @@ import kotlinx.serialization.json.*
 val STUDENTS: String = Course::students.name
 val TEACHERS: String = Course::teachers.name
 val TEACHER_NAMES: String = Course::teacherNames.name
+val STUDENT_NAMES: String = Course::studentNames.name
 val FIRST_NAME: String = User::firstName.name
 val LAST_NAME: String = User::lastName.name
 val PASSWORD: String = User::password.name
@@ -13,18 +14,21 @@ val NOTIFICATIONS: String = User::notifications.name
 val ID: String = User::_id.name
 const val IS_ENROLLED: String = "isEnrolled"
 
-object CourseTeachersSerializer : JsonTransformingSerializer<Course>(Course.serializer()) {
+object CourseUserNamesSerializer : JsonTransformingSerializer<Course>(Course.serializer()) {
     override fun transformSerialize(element: JsonElement): JsonElement {
-        val newTeacherNames = element.jsonObject[TEACHER_NAMES]?.jsonArray?.map { elem ->
+        val extractNames = { elem: JsonElement ->
             JsonObject(elem.jsonObject.filterKeys { it == ID || it == FIRST_NAME || it == LAST_NAME })
-        } ?: listOf()
-        val newElement = element.jsonObject.filterKeys { it != TEACHER_NAMES }
-        return if (newTeacherNames.isEmpty()) JsonObject(newElement)
-        else JsonObject(newElement + (TEACHERS to JsonArray(newTeacherNames)))
+        }
+        val newTeacherNames = element.jsonObject[TEACHER_NAMES]?.jsonArray?.map(extractNames) ?: listOf()
+        val newStudentNames = element.jsonObject[STUDENT_NAMES]?.jsonArray?.map(extractNames) ?: listOf()
+        val newElement = element.jsonObject.filterKeys { it != TEACHER_NAMES && it != STUDENT_NAMES }.toMutableMap()
+        if (newTeacherNames.isNotEmpty()) newElement += (TEACHERS to JsonArray(newTeacherNames))
+        if (newStudentNames.isNotEmpty()) newElement += (STUDENTS to JsonArray(newStudentNames))
+        return JsonObject(newElement)
     }
 }
 
-class CourseSerializer(private val studentID: UserID) : JsonTransformingSerializer<Course>(CourseTeachersSerializer) {
+class CourseSerializer(private val studentID: UserID) : JsonTransformingSerializer<Course>(CourseUserNamesSerializer) {
     override fun transformSerialize(element: JsonElement): JsonElement {
         val isEnrolled = element.jsonObject[STUDENTS]?.jsonArray?.contains(JsonPrimitive(studentID))
         val newElement = element.jsonObject.filterKeys { k -> k != STUDENTS }

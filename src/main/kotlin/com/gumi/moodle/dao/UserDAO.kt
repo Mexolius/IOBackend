@@ -6,7 +6,6 @@ import com.gumi.moodle.model.User
 import org.bson.conversions.Bson
 import org.litote.kmongo.EMPTY_BSON
 import org.litote.kmongo.coroutine.CoroutineCollection
-import org.litote.kmongo.coroutine.CoroutineFindPublisher
 import org.litote.kmongo.eq
 import org.litote.kmongo.exclude
 import kotlin.reflect.KProperty
@@ -29,9 +28,8 @@ class UserDAO(mongoURI: String = MONGO_URI) : AbstractDAO<User, String>(mongoURI
     ): List<User> =
         getCollection()
             .find(query)
-            .applyExcludes(includeCrypto, includeNotifications)
+            .projection(applyExcludes(includeCrypto, includeNotifications))
             .toList()
-
 
     suspend fun getOne(
         value: String,
@@ -41,24 +39,14 @@ class UserDAO(mongoURI: String = MONGO_URI) : AbstractDAO<User, String>(mongoURI
     ): User? =
         getCollection()
             .find(queryCreator(value))
-            .applyExcludes(includeCrypto, includeNotifications)
+            .projection(applyExcludes(includeCrypto, includeNotifications))
             .first()
 
-
-    private fun CoroutineFindPublisher<User>.applyExcludes(
+    private fun applyExcludes(
         includeCrypto: Boolean,
         includeNotifications: Boolean
-    ): CoroutineFindPublisher<User> {
-        val fields = mutableListOf<KProperty<*>>()
-        if (!includeCrypto) fields.addAll(listOf(User::password, User::salt))
-        if (!includeNotifications) fields.add(User::notifications)
-
-        if (fields.isNotEmpty()) {
-            projection(exclude(fields))
-        }
-
-        return this
-    }
-
-
+    ): Bson = exclude(mutableListOf<KProperty<*>>().apply {
+        if (!includeCrypto) addAll(listOf(User::password, User::salt))
+        if (!includeNotifications) add(User::notifications)
+    })
 }

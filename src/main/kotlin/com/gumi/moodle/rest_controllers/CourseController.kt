@@ -7,7 +7,7 @@ import com.gumi.moodle.dao.CourseDAO
 import com.gumi.moodle.dao.UserDAO
 import com.gumi.moodle.model.Course
 import com.gumi.moodle.model.CourseSerializer
-import com.gumi.moodle.model.CourseTeachersSerializer
+import com.gumi.moodle.model.CourseUserNamesSerializer
 import com.gumi.moodle.model.Role.*
 import com.gumi.moodle.user_id
 import com.gumi.moodle.withRole
@@ -88,9 +88,9 @@ fun Application.courseRoutes() {
             withRole(ADMIN, idField = ID()) {
                 route("/courses/of-student/{$user_id}") {
                     get {
-                        parameters(user_id) { (id) ->
-                            val courses = courseDAO.getAll(Course::students contains id, studentID = id)
-                            call.respond(ListSerializer(CourseSerializer(id)), courses)
+                        parameters(user_id) { (studentID) ->
+                            val courses = courseDAO.getAll(Course::students contains studentID, studentID)
+                            call.respond(ListSerializer(CourseSerializer(studentID)), courses)
                         }
                     }
                 }
@@ -98,8 +98,8 @@ fun Application.courseRoutes() {
             withRole(ADMIN, TEACHER, idField = ID()) {
                 route("/courses/of-teacher/{$user_id}") {
                     get {
-                        parameters(user_id) { (id) ->
-                            val courses = courseDAO.getAll(Course::teachers contains id)
+                        parameters(user_id) { (teacherID) ->
+                            val courses = courseDAO.getAll(Course::teachers contains teacherID)
                             call.respond(courses)
                         }
                     }
@@ -119,7 +119,7 @@ fun Application.courseRoutes() {
                             course = course ?: return@get notFoundResponse()
 
                             if (isStudent) call.respond(CourseSerializer(userID), course)
-                            else call.respond(CourseTeachersSerializer, course)
+                            else call.respond(CourseUserNamesSerializer, course)
                         }
                     }
                 }

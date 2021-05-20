@@ -5,8 +5,16 @@
   "studentLimit": 100,
   "isEnrolled": false,
   "students": [
-    "student_id1",
-    "student_id2"
+    {
+      "_id": "student_id1",
+      "firstName": "student",
+      "lastName": "id1"
+    },
+    {
+      "_id": "student_id2",
+      "firstName": "student",
+      "lastName": "id2"
+    }
   ],
   "teachers": [
     {
