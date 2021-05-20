@@ -118,7 +118,6 @@ fun Application.courseRoutes() {
 
                             course = course ?: return@get notFoundResponse()
 
-                            println(course.studentNames)
                             if (isStudent) call.respond(CourseSerializer(userID), course)
                             else call.respond(CourseUserNamesSerializer, course)
                         }
