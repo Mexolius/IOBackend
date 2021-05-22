@@ -1,11 +1,10 @@
-# This workflow will build a Java project with Gradle
+# This workflow will build a project with Gradle
 # For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-gradle
 
-name: Java CI with Gradle
+name: CI with Gradle
 
 on:
   push:
-    branches: [ master ]
   pull_request:
     branches: [ master ]
 
@@ -25,3 +24,10 @@ jobs:
       run: chmod +x gradlew
     - name: Run all tests
       run: ./gradlew test --stacktrace
+    - name: Send job dispatch to update front-end submodule
+      if: ${{ github.event_name == 'push' }}
+      run: |
+        curl -X POST https://api.github.com/repos/Mexolius/IO/dispatches \
+        -H 'Accept: application/vnd.github.everest-preview+json' \
+        -u Mexolius:${{ secrets.ACCESS_TOKEN }} \
+        --data '{"event_type": "update_module"}'
