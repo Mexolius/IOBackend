@@ -1,0 +1,23 @@
+{
+  "grade1": {
+    "studentPointsPosition": -1,
+    "studentPoints": null,
+    "points": [
+      {
+        "from": 0,
+        "to": 6,
+        "number": 6
+      },
+      {
+        "from": 14,
+        "to": 20,
+        "number": 2
+      },
+      {
+        "from": 21,
+        "to": 27,
+        "number": 4
+      }
+    ]
+  }
+}

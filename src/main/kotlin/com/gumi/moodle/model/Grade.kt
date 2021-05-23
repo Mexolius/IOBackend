@@ -10,7 +10,7 @@ data class Grade(
     val name: String,
     var isLeaf: Boolean,
     var level: Int,
-    val maxPoints: Int = 0,
+    var maxPoints: Int = 0,
     val aggregation: Aggregation = Aggregation.SUM,
     val thresholds: MutableSet<Float> = mutableSetOf(),
     val studentPoints: MutableMap<UserID, Int> = mutableMapOf(),
