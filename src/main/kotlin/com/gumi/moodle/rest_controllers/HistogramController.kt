@@ -2,14 +2,15 @@ package com.gumi.moodle.rest_controllers
 
 import com.gumi.moodle.*
 import com.gumi.moodle.dao.CourseDAO
-import com.gumi.moodle.model.Bucket
+import com.gumi.moodle.histogram.*
+import com.gumi.moodle.model.Course
 import com.gumi.moodle.model.Role.*
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import org.koin.ktor.ext.inject
-import kotlin.math.min
+import org.litote.kmongo.eq
 
 
 class HistogramController
@@ -20,49 +21,40 @@ fun Application.histogramRoutes() {
     routing {
         authenticate("basicAuth") {
             withRole(ADMIN, TEACHER, STUDENT, idField = IDField.ID()) {
-                route("/histogram/grades/{$course_id}/{$grade_id}") {
+                route("/histogram/grades/{$course_id}/{$user_id}") {
                     get {
-                        parameters(course_id, grade_id) { (courseID, gradeID) ->
-                            val grade = dao.getGrade(courseID, gradeID) ?: return@get notFoundResponse()
+                        parameters(course_id, user_id) { (courseID, userID) ->
+                            val grades = dao.getOne(courseID) { Course::_id eq it }?.grades ?: return@get notFoundResponse()
 
-                            val studentPoints = grade.studentPoints.values.sorted()
+                            calculateParentGrades(grades)
 
-                            call.respond(studentPoints)
+                            val response = grades.associate { it._id to HistogramResponse(it.studentPoints[userID], gradeList(it)) }
+
+                            call.respond(response)
                         }
                     }
                 }
-                route("/histogram/buckets/{$buckets}/{$course_id}/{$grade_id}") {
+                route("/histogram/buckets/{$buckets}/{$course_id}/{$user_id}") {
                     get {
-                        parameters(course_id, grade_id, buckets) { (courseID, gradeID, buckets) ->
-                            val grade = dao.getGrade(courseID, gradeID) ?: return@get notFoundResponse()
+                        parameters(course_id, user_id, buckets) { (courseID, userID, buckets) ->
+                            val grades = dao.getOne(courseID) { Course::_id eq it }?.grades ?: return@get notFoundResponse()
 
-                            val bucketRange = grade.maxPoints / buckets.toInt()
+                            calculateParentGrades(grades)
 
-                            val result = grade.studentPoints.values.sorted()
-                                .groupBy { (it / bucketRange) * bucketRange }
-                                .mapValues { it.value.size }
-                                .entries
-                                .map { Bucket(it.key, min(it.key + bucketRange - 1, grade.maxPoints), it.value) }
+                            val result = grades.associate { it._id to histogramResponse(it, bucketList(it, buckets), userID) }
 
                             call.respond(result)
                         }
                     }
                 }
-                route("/histogram/bucketsWithEmpty/{$buckets}/{$course_id}/{$grade_id}") {
+                route("/histogram/bucketsWithEmpty/{$buckets}/{$course_id}/{$user_id}") {
                     get {
-                        parameters(course_id, grade_id, buckets) { (courseID, gradeID, buckets) ->
-                            val grade = dao.getGrade(courseID, gradeID) ?: return@get notFoundResponse()
+                        parameters(course_id, user_id, buckets) { (courseID, userID, buckets) ->
+                            val grades = dao.getOne(courseID) { Course::_id eq it }?.grades ?: return@get notFoundResponse()
 
-                            val bucketRange = grade.maxPoints / buckets.toInt()
+                            calculateParentGrades(grades)
 
-                            val studentPoints = grade.studentPoints.values.sorted()
-                                .groupBy { (it / bucketRange) * bucketRange }
-                                .mapValues { it.value.size }
-
-                            val result = (0..grade.maxPoints step bucketRange).associateWith { 0 }
-                                .plus(studentPoints)
-                                .entries
-                                .map { Bucket(it.key, min(it.key + bucketRange - 1, grade.maxPoints), it.value) }
+                            val result = grades.associate { it._id to histogramResponse(it, bucketListWithEmpty(it, buckets), userID) }
 
                             call.respond(result)
                         }
