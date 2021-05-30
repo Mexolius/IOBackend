@@ -1,6 +1,7 @@
 package com.gumi.moodle.rest_controllers
 
 import com.gumi.moodle.IDField.EMAIL
+import com.gumi.moodle.IDField.ID
 import com.gumi.moodle.course_id
 import com.gumi.moodle.dao.UserDAO
 import com.gumi.moodle.dao.setTo
@@ -54,7 +55,7 @@ fun Application.userRoutes() {
                     }
                 }
             }
-            withRole(ADMIN, STUDENT) {
+            withRole(ADMIN, idField = ID()) {
                 route("/notifications/user/{$user_id}") {
                     get {
                         parameters(user_id) { (userID) ->
