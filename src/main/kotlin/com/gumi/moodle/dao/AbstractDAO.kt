@@ -33,10 +33,10 @@ abstract class AbstractDAO<T : Any, U>(mongoURI: String, protected val defaultQu
 
     suspend fun updateOne(
         value: U,
-        update: Bson,
+        vararg update: Bson,
         queryCreator: (U) -> Bson = defaultQueryCreator
     ): Boolean =
-        getCollection().updateOne(queryCreator(value), update).wasAcknowledged()
+        update.all { getCollection().updateOne(queryCreator(value), it).wasAcknowledged() }
 
     suspend fun drop() =
         getCollection().drop()

@@ -2,6 +2,8 @@ package com.gumi.moodle.rest_controllers
 
 import com.gumi.moodle.dao.UserDAO
 import com.gumi.moodle.dao.and
+import com.gumi.moodle.model.Course
+import com.gumi.moodle.model.Grade
 import com.gumi.moodle.model.Notification
 import com.gumi.moodle.model.User
 import io.ktor.application.*
@@ -54,19 +56,15 @@ suspend inline fun PipelineContext<Unit, ApplicationCall>.parameters(
 suspend inline fun <reified T : Any> ApplicationCall.respond(serializer: KSerializer<T>, value: T): Unit =
     this.respond(Json { encodeDefaults = true }.encodeToJsonElement(serializer, value))
 
-suspend fun createNotification(userDao: UserDAO, courseID: String, gradeID: String, studentID: String) {
-    val notification = Notification(courseID, gradeID, System.currentTimeMillis())
-
-    userDao.updateOne(
+suspend fun UserDAO.createNotification(course: Course, grade: Grade, studentID: String): Boolean =
+    updateOne(
         studentID,
-        pullByFilter(User::notifications, (Notification::courseID eq courseID) and (Notification::gradeID eq gradeID))
+        pullByFilter(
+            User::notifications,
+            (Notification::courseID eq course._id) and (Notification::gradeID eq grade._id)
+        ),
+        push(User::notifications, Notification(course, grade, System.currentTimeMillis()))
     ) { User::_id eq it }
-
-    userDao.updateOne(
-        studentID,
-        push(User::notifications, notification)
-    ) { User::_id eq it }
-}
 
 
 

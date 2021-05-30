@@ -23,9 +23,6 @@ import org.litote.kmongo.addToSet
 import org.litote.kmongo.contains
 import org.litote.kmongo.eq
 
-
-class CourseController
-
 fun Application.courseRoutes() {
     val courseDAO: CourseDAO by inject()
     val userDAO: UserDAO by inject()

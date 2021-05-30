@@ -12,11 +12,8 @@ import io.ktor.routing.*
 import org.koin.ktor.ext.inject
 import org.litote.kmongo.eq
 
-
-class HistogramController
-
 fun Application.histogramRoutes() {
-    val dao: CourseDAO by inject()
+    val courseDAO: CourseDAO by inject()
 
     routing {
         authenticate("basicAuth") {
@@ -24,11 +21,14 @@ fun Application.histogramRoutes() {
                 route("/histogram/grades/{$course_id}/{$user_id}") {
                     get {
                         parameters(course_id, user_id) { (courseID, userID) ->
-                            val grades = dao.getOne(courseID) { Course::_id eq it }?.grades ?: return@get notFoundResponse()
+                            val grades = courseDAO.getOne(courseID) { Course::_id eq it }?.grades
+                                ?: return@get notFoundResponse()
 
                             calculateParentGrades(grades)
 
-                            val response = grades.associate { it._id to HistogramResponse(it.studentPoints[userID], gradeList(it)) }
+                            val response = grades.associate {
+                                it._id to HistogramResponse(it.studentPoints[userID], gradeList(it))
+                            }
 
                             call.respond(response)
                         }
@@ -37,11 +37,13 @@ fun Application.histogramRoutes() {
                 route("/histogram/buckets/{$buckets}/{$course_id}/{$user_id}") {
                     get {
                         parameters(course_id, user_id, buckets) { (courseID, userID, buckets) ->
-                            val grades = dao.getOne(courseID) { Course::_id eq it }?.grades ?: return@get notFoundResponse()
+                            val grades = courseDAO.getOne(courseID) { Course::_id eq it }?.grades
+                                ?: return@get notFoundResponse()
 
                             calculateParentGrades(grades)
 
-                            val result = grades.associate { it._id to histogramResponse(it, bucketList(it, buckets), userID) }
+                            val result =
+                                grades.associate { it._id to histogramResponse(it, bucketList(it, buckets), userID) }
 
                             call.respond(result)
                         }
@@ -50,11 +52,14 @@ fun Application.histogramRoutes() {
                 route("/histogram/bucketsWithEmpty/{$buckets}/{$course_id}/{$user_id}") {
                     get {
                         parameters(course_id, user_id, buckets) { (courseID, userID, buckets) ->
-                            val grades = dao.getOne(courseID) { Course::_id eq it }?.grades ?: return@get notFoundResponse()
+                            val grades = courseDAO.getOne(courseID) { Course::_id eq it }?.grades
+                                ?: return@get notFoundResponse()
 
                             calculateParentGrades(grades)
 
-                            val result = grades.associate { it._id to histogramResponse(it, bucketListWithEmpty(it, buckets), userID) }
+                            val result = grades.associate {
+                                it._id to histogramResponse(it, bucketListWithEmpty(it, buckets), userID)
+                            }
 
                             call.respond(result)
                         }

@@ -19,7 +19,7 @@ class CourseDAO(mongoURI: String = MONGO_URI) : AbstractDAO<Course, String>(mong
 
     suspend fun getAll(query: Bson = EMPTY_BSON, studentID: UserID): List<Course> =
         getCollection().find(query)
-            .projection(studentProjection(studentID))
+            .projection(courseProjection(studentID))
             .toList()
 
     override suspend fun getOne(value: String, queryCreator: (String) -> Bson): Course? =
@@ -38,10 +38,10 @@ class CourseDAO(mongoURI: String = MONGO_URI) : AbstractDAO<Course, String>(mong
             lookup(from = "User", localField = "teachers", foreignField = "_id", newAs = "teacherNames"),
             lookup(from = "User", localField = "students", foreignField = "_id", newAs = "studentNames"),
         )
-        return if (studentID.isNotEmpty()) pipeline + project(studentProjection(studentID)) else pipeline
+        return if (studentID.isNotEmpty()) pipeline + project(courseProjection(studentID)) else pipeline
     }
 
-    private fun studentProjection(studentID: UserID): Bson = include(
+    private fun courseProjection(studentID: UserID): Bson = include(
         Course::_id,
         Course::name,
         Course::description,

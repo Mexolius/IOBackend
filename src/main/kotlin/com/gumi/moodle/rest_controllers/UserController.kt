@@ -1,9 +1,11 @@
 package com.gumi.moodle.rest_controllers
 
 import com.gumi.moodle.IDField.EMAIL
+import com.gumi.moodle.course_id
 import com.gumi.moodle.dao.UserDAO
 import com.gumi.moodle.dao.setTo
 import com.gumi.moodle.email
+import com.gumi.moodle.model.Notification
 import com.gumi.moodle.model.Role.ADMIN
 import com.gumi.moodle.model.Role.STUDENT
 import com.gumi.moodle.model.User
@@ -18,19 +20,17 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import org.koin.ktor.ext.inject
 import org.litote.kmongo.eq
-
-
-class UserController
+import org.litote.kmongo.pullByFilter
 
 fun Application.userRoutes() {
-    val dao: UserDAO by inject()
+    val userDAO: UserDAO by inject()
 
     routing {
         authenticate("basicAuth") {
             withRole(ADMIN) {
                 route("/users") {
                     get {
-                        val users: List<User> = dao.getAll()
+                        val users: List<User> = userDAO.getAll()
 
                         call.respond(users)
                     }
@@ -38,7 +38,7 @@ fun Application.userRoutes() {
                 route("/user") {
                     post {
                         val user = call.receive<User>()
-                        dao.add(User.createUserWithPlaintextInput(user))
+                        userDAO.add(User.createUserWithPlaintextInput(user))
                         call.respond(HttpStatusCode.OK)
                     }
                 }
@@ -47,7 +47,7 @@ fun Application.userRoutes() {
                 route("/user/{$email}") {
                     get {
                         parameters(email) { (userEmail) ->
-                            val user = dao.getOne(userEmail)
+                            val user = userDAO.getOne(userEmail)
                                 ?: return@get notFoundResponse()
                             call.respond(UserSerializer, user)
                         }
@@ -58,17 +58,28 @@ fun Application.userRoutes() {
                 route("/notifications/user/{$user_id}") {
                     get {
                         parameters(user_id) { (userID) ->
-                            val user = dao.getOne(userID, includeNotifications = true) { User::_id eq it }
+                            val user = userDAO.getOne(userID, includeNotifications = true) { User::_id eq it }
                                 ?: return@get notFoundResponse()
                             call.respond(user.notifications)
                         }
                     }
-                }
-                route("/notifications/user/{$user_id}/clear") {
-                    post {
+                    delete {
                         parameters(user_id) { (userID) ->
                             val updated =
-                                dao.updateOne(userID, User::notifications setTo mutableSetOf()) { User::_id eq it }
+                                userDAO.updateOne(userID, User::notifications setTo mutableSetOf()) { User::_id eq it }
+
+                            if (updated) call.respond(HttpStatusCode.OK)
+                            else call.respond(HttpStatusCode.NotModified)
+                        }
+                    }
+                }
+                route("/notifications/user/{$user_id}/{$course_id}") {
+                    delete {
+                        parameters(user_id, course_id) { (userID, courseID) ->
+                            val updated = userDAO.updateOne(
+                                userID,
+                                pullByFilter(User::notifications, (Notification::courseID eq courseID))
+                            ) { User::_id eq it }
 
                             if (updated) call.respond(HttpStatusCode.OK)
                             else call.respond(HttpStatusCode.NotModified)
@@ -80,7 +91,7 @@ fun Application.userRoutes() {
         route("/register") {
             post {
                 val user = call.receive<User>()
-                val result = dao.add(User.createUserWithPlaintextInput(user))
+                val result = userDAO.add(User.createUserWithPlaintextInput(user))
                 if (!result) {
                     return@post call.respondText("User already exists", status = HttpStatusCode.Conflict)
                 }

@@ -167,7 +167,7 @@ class Generator {
         val now = System.currentTimeMillis()
         val studentMap = students.associateBy { it._id }
         val notificationsMap = course.grades
-            .map { g -> g.studentPoints.keys.associateWith { Notification(course._id as String, g._id, now) } }
+            .map { g -> g.studentPoints.keys.associateWith { Notification(course, g, now) } }
             .flatMap { it.entries }
             .groupBy { it.key }
             .mapValues { entry -> entry.value.map { it.value } }
