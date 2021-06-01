@@ -12,11 +12,8 @@ import io.ktor.routing.*
 import org.koin.ktor.ext.inject
 import org.litote.kmongo.eq
 
-
-class HistogramController
-
 fun Application.histogramRoutes() {
-    val dao: CourseDAO by inject()
+    val courseDAO: CourseDAO by inject()
 
     routing {
         authenticate("basicAuth") {
@@ -24,7 +21,8 @@ fun Application.histogramRoutes() {
                 route("/histogram/grades/{$course_id}/{$user_id}") {
                     get {
                         parameters(course_id, user_id) { (courseID, userID) ->
-                            val grades = dao.getOne(courseID) { Course::_id eq it }?.grades ?: return@get notFoundResponse()
+                            val grades = courseDAO.getOne(courseID) { Course::_id eq it }?.grades
+                                ?: return@get notFoundResponse()
 
                             calculateParentGrades(grades)
 
@@ -37,7 +35,8 @@ fun Application.histogramRoutes() {
                 route("/histogram/buckets/{$buckets}/{$course_id}/{$user_id}") {
                     get {
                         parameters(course_id, user_id, buckets) { (courseID, userID, buckets) ->
-                            val grades = dao.getOne(courseID) { Course::_id eq it }?.grades ?: return@get notFoundResponse()
+                            val grades = courseDAO.getOne(courseID) { Course::_id eq it }?.grades
+                                ?: return@get notFoundResponse()
 
                             calculateParentGrades(grades)
 
@@ -50,7 +49,8 @@ fun Application.histogramRoutes() {
                 route("/histogram/bucketsWithEmpty/{$buckets}/{$course_id}/{$user_id}") {
                     get {
                         parameters(course_id, user_id, buckets) { (courseID, userID, buckets) ->
-                            val grades = dao.getOne(courseID) { Course::_id eq it }?.grades ?: return@get notFoundResponse()
+                            val grades = courseDAO.getOne(courseID) { Course::_id eq it }?.grades
+                                ?: return@get notFoundResponse()
 
                             calculateParentGrades(grades)
 

@@ -22,12 +22,9 @@ import io.ktor.routing.*
 import org.koin.ktor.ext.inject
 import org.litote.kmongo.*
 
-
-class GradeController
-
 fun Application.gradeRoutes() {
-    val dao: CourseDAO by inject()
-    val userDao: UserDAO by inject()
+    val courseDAO: CourseDAO by inject()
+    val userDAO: UserDAO by inject()
 
     routing {
         authenticate("basicAuth") {
@@ -36,7 +33,7 @@ fun Application.gradeRoutes() {
                     post {
                         parameters(course_id) { (courseID) ->
                             val grade = call.receive<List<Grade>>()
-                            val updated = dao.updateOne(
+                            val updated = courseDAO.updateOne(
                                 courseID,
                                 pushEach(Course::grades, grade)
                             ) { Course::_id eq it }
@@ -50,7 +47,7 @@ fun Application.gradeRoutes() {
                     post {
                         parameters(course_id) { (courseID) ->
                             val grades = call.receive<MutableSet<Grade>>()
-                            val updated = dao.updateOne(
+                            val updated = courseDAO.updateOne(
                                 courseID,
                                 Course::grades setTo grades
                             ) { Course::_id eq it }
@@ -64,7 +61,7 @@ fun Application.gradeRoutes() {
                     post {
                         parameters(course_id, grade_id) { (courseID, gradeID) ->
                             val grade = call.receive<Grade>()
-                            val updated = dao.updateOne(
+                            val updated = courseDAO.updateOne(
                                 courseID,
                                 Course::grades.posOp setTo grade
                             ) { Course::_id eq it withGradeID gradeID }
@@ -76,7 +73,7 @@ fun Application.gradeRoutes() {
                     }
                     delete {
                         parameters(course_id, grade_id) { (courseID, gradeID) ->
-                            val updated = dao.updateOne(
+                            val updated = courseDAO.updateOne(
                                 courseID,
                                 pullByFilter(Course::grades, Grade::_id eq gradeID)
                             ) { Course::_id eq it }
@@ -90,7 +87,7 @@ fun Application.gradeRoutes() {
                     post {
                         parameters(course_id, grade_id) { (courseID, gradeID) ->
                             val grades = call.receive<Map<String, Int>>()
-                            val updated = dao.updateOne(
+                            val updated = courseDAO.updateOne(
                                 courseID,
                                 combine(grades.map { (k, v) ->
                                     Course::grades.posOp / Grade::studentPoints atKey k setTo v
@@ -104,14 +101,17 @@ fun Application.gradeRoutes() {
                 route("/grade/{$course_id}/{$grade_id}/{$user_id}") {
                     post {
                         parameters(course_id, grade_id, user_id) { (courseID, gradeID, studentID) ->
-                            val grade = call.receive<Int>()
-                            val updated = dao.updateOne(
+                            val points = call.receive<Int>()
+                            val updated = courseDAO.updateOne(
                                 courseID,
-                                Course::grades.posOp / Grade::studentPoints atKey studentID setTo grade
+                                Course::grades.posOp / Grade::studentPoints atKey studentID setTo points
                             ) { Course::_id eq it withGradeID gradeID }
 
-                            if (updated) {
-                                createNotification(userDao, courseID, gradeID, studentID)
+                            val course = courseDAO.getOne(courseID) { Course::_id eq it }
+                            val grade = course?.grades?.find { it._id == gradeID }
+
+                            if (updated && course != null && grade != null) {
+                                userDAO.createNotification(course, grade, studentID)
                                 call.respond(HttpStatusCode.OK)
                             } else call.respond(HttpStatusCode.NotModified)
                         }

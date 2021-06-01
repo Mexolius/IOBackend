@@ -17,12 +17,9 @@ import org.koin.ktor.ext.inject
 import org.litote.kmongo.`in`
 import org.litote.kmongo.eq
 
-
-class ExportController
-
 fun Application.exportRoutes() {
-    val dao: UserDAO by inject()
-    val courseDao: CourseDAO by inject()
+    val userDAO: UserDAO by inject()
+    val courseDAO: CourseDAO by inject()
 
     routing {
         authenticate("basicAuth") {
@@ -31,8 +28,8 @@ fun Application.exportRoutes() {
                     get {
                         parameters(course_id, format) { (courseID, format) ->
                             val course =
-                                courseDao.getOne(courseID) { Course::_id eq it } ?: return@get notFoundResponse()
-                            val studentsInCourse = dao.getAll(User::_id `in` course.students)
+                                courseDAO.getOne(courseID) { Course::_id eq it } ?: return@get notFoundResponse()
+                            val studentsInCourse = userDAO.getAll(User::_id `in` course.students)
 
                             val exporter = Exporter(course, studentsInCourse)
 

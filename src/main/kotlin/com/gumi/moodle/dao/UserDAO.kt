@@ -4,10 +4,8 @@ import com.gumi.moodle.MONGO_URI
 import com.gumi.moodle.USER_COLLECTION
 import com.gumi.moodle.model.User
 import org.bson.conversions.Bson
-import org.litote.kmongo.EMPTY_BSON
+import org.litote.kmongo.*
 import org.litote.kmongo.coroutine.CoroutineCollection
-import org.litote.kmongo.eq
-import org.litote.kmongo.exclude
 import kotlin.reflect.KProperty
 
 class UserDAO(mongoURI: String = MONGO_URI) : AbstractDAO<User, String>(mongoURI, { User::email eq it }) {
@@ -27,8 +25,7 @@ class UserDAO(mongoURI: String = MONGO_URI) : AbstractDAO<User, String>(mongoURI
         includeNotifications: Boolean = false,
     ): List<User> =
         getCollection()
-            .find(query)
-            .projection(applyExcludes(includeCrypto, includeNotifications))
+            .aggregate<User>(pipeline(query, includeCrypto, includeNotifications))
             .toList()
 
     suspend fun getOne(
@@ -38,15 +35,25 @@ class UserDAO(mongoURI: String = MONGO_URI) : AbstractDAO<User, String>(mongoURI
         queryCreator: (String) -> Bson = defaultQueryCreator,
     ): User? =
         getCollection()
-            .find(queryCreator(value))
-            .projection(applyExcludes(includeCrypto, includeNotifications))
+            .aggregate<User>(pipeline(queryCreator(value), includeCrypto, includeNotifications))
             .first()
 
-    private fun applyExcludes(
+    private fun pipeline(
+        query: Bson,
+        includeCrypto: Boolean,
+        includeNotifications: Boolean
+    ): List<Bson> =
+        listOf(
+            match(query),
+            project(userProjection(includeCrypto, includeNotifications))
+        )
+
+    private fun userProjection(
         includeCrypto: Boolean,
         includeNotifications: Boolean
     ): Bson = exclude(mutableListOf<KProperty<*>>().apply {
         if (!includeCrypto) addAll(listOf(User::password, User::salt))
         if (!includeNotifications) add(User::notifications)
     })
+
 }
