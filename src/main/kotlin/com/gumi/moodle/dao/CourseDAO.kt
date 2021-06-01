@@ -18,9 +18,7 @@ class CourseDAO(mongoURI: String = MONGO_URI) : AbstractDAO<Course, String>(mong
         getCollection().find(Course::name eq obj.name).toList().isNotEmpty()
 
     suspend fun getAll(query: Bson = EMPTY_BSON, studentID: UserID): List<Course> =
-        getCollection().find(query)
-            .projection(courseProjection(studentID))
-            .toList()
+        getCollection().aggregate<Course>(pipeline(query, studentID)).toList()
 
     override suspend fun getOne(value: String, queryCreator: (String) -> Bson): Course? =
         getOne(value, "", queryCreator)
