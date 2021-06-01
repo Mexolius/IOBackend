@@ -33,13 +33,13 @@ fun bucketListWithEmpty(grade: Grade, buckets: String): List<Bucket> {
 fun gradeList(grade: Grade) = grade.studentPoints.values.sorted()
 
 
-fun histogramResponse(x: Grade, buckets: List<Bucket>, studentID: String): HistogramResponse<Bucket, Bucket> {
-    return HistogramResponse(buckets.find { it.from >= x.studentPoints[studentID] ?: 2000000000 }, buckets)
+fun histogramResponse(grade: Grade, buckets: List<Bucket>, studentID: String): HistogramResponse<Bucket, Bucket> {
+    return HistogramResponse(grade.name, buckets.find { it.from >= grade.studentPoints[studentID] ?: 2000000000 }, buckets)
 }
 
 @Serializable
-data class HistogramResponse<T, U>(val studentPointsPosition: Int?, val studentPoints: U?, val points: List<T>) {
-    constructor(studentPoints: U?, points: List<T>) : this(points.indexOf(studentPoints), studentPoints, points)
+data class HistogramResponse<T, U>(val gradeName: String, val studentPointsPosition: Int?, val studentPoints: U?, val points: List<T>) {
+    constructor(gradeName: String, studentPoints: U?, points: List<T>) : this(gradeName, points.indexOf(studentPoints), studentPoints, points)
 }
 
 
