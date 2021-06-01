@@ -26,9 +26,7 @@ fun Application.histogramRoutes() {
 
                             calculateParentGrades(grades)
 
-                            val response = grades.associate {
-                                it._id to HistogramResponse(it.studentPoints[userID], gradeList(it))
-                            }
+                            val response = grades.map { HistogramResponse(it.name, it.studentPoints[userID], gradeList(it)) }
 
                             call.respond(response)
                         }
@@ -42,8 +40,7 @@ fun Application.histogramRoutes() {
 
                             calculateParentGrades(grades)
 
-                            val result =
-                                grades.associate { it._id to histogramResponse(it, bucketList(it, buckets), userID) }
+                            val result = grades.map { histogramResponse(it, bucketList(it, buckets), userID) }
 
                             call.respond(result)
                         }
@@ -57,9 +54,7 @@ fun Application.histogramRoutes() {
 
                             calculateParentGrades(grades)
 
-                            val result = grades.associate {
-                                it._id to histogramResponse(it, bucketListWithEmpty(it, buckets), userID)
-                            }
+                            val result = grades.map { histogramResponse(it, bucketListWithEmpty(it, buckets), userID) }
 
                             call.respond(result)
                         }
