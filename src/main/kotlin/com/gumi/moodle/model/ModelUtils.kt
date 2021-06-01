@@ -31,7 +31,7 @@ object CourseUserNamesSerializer : JsonTransformingSerializer<Course>(Course.ser
 class CourseSerializer(private val studentID: UserID) : JsonTransformingSerializer<Course>(CourseUserNamesSerializer) {
     override fun transformSerialize(element: JsonElement): JsonElement {
         val isEnrolled = element.jsonObject[STUDENTS]?.jsonArray?.any {
-            it == JsonPrimitive(studentID)
+             if (it is JsonObject) it.jsonObject[ID]?.equals(JsonPrimitive(studentID)) ?: false else it == JsonPrimitive(studentID)
         }
         val newElement = element.jsonObject.filterKeys { k -> k != STUDENTS }
         return JsonObject(newElement + (IS_ENROLLED to JsonPrimitive(isEnrolled)))
